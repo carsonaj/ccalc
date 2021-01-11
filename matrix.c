@@ -124,7 +124,7 @@ void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
 
 // mathematics:
 
-// entryary row operations:
+// elementary row operations:
 
 // (type 1) swaps rows i,j
 void mat_row_op1(Matrix *mat, int i, int j) {
@@ -150,7 +150,7 @@ void mat_row_op2(Matrix *mat, int i, double k) {
     int cols = mat->cols;
     int j;
     for (j=0; j<cols; j=j+1) {
-        double entry = k*mat_get_entry(mat, i, j);
+        double entry = k * mat_get_entry(mat, i, j);
         mat_set_entry(mat, i, j, entry);
     }
 
@@ -162,7 +162,7 @@ void mat_row_op3(Matrix *mat, int i, int j, double k) {
     int cols = mat->cols;
     int col;
     for (col=0; col<cols; col=col+1) {
-        double entry = mat_get_entry(mat, i, col) + k*mat_get_entry(mat, j, col);
+        double entry = mat_get_entry(mat, i, col) + k * mat_get_entry(mat, j, col);
         mat_set_entry(mat, i, col, entry);
     }
 
