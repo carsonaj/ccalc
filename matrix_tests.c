@@ -100,7 +100,7 @@ void test_mat_get_rows() {
 }
 
 void test_mat_get_cols() {
-     Matrix *m = mat_create(3, 3);
+    Matrix *m = mat_create(3, 3);
     Matrix *cm = mat_create(2, 3);
     Matrix *cmc = mat_create(2, 3);
 
@@ -117,18 +117,60 @@ void test_mat_get_cols() {
     mat_delete(cm);
     mat_delete(cmc);
 
-    return;
-    
+    return; 
 } 
 
 // mathematics: 
 
+void test_mat_row_op1() {
+    Matrix *mat = mat_create(3, 3);
+    Matrix *cmat = mat_create(3, 3);
+    double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double centries[9] = {1, 2, 3, 7, 8, 9, 4, 5, 6};
+    mat_fill(mat, entries); 
+    mat_fill(cmat, centries);
+
+    mat_row_op1(mat, 1, 2);
+    assert(mat_equal(cmat, mat));
+
+    return;
+}
+
+void test_mat_row_op2() {
+    Matrix *mat = mat_create(3, 3);
+    Matrix *cmat = mat_create(3, 3);
+    double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double centries[9] = {1, 2, 3, 8, 10, 12, 7, 8, 9};
+    mat_fill(mat, entries); 
+    mat_fill(cmat, centries);
+
+    mat_row_op2(mat, 1, 2);
+    assert(mat_equal(cmat, mat));
+
+    return;
+}
+
+void test_mat_row_op3() {
+    Matrix *mat = mat_create(3, 3);
+    Matrix *cmat = mat_create(3, 3);
+    double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double centries[9] = {1, 2, 3, -3, -3, -3, 4, 5, 6};
+    mat_fill(mat, entries); 
+    mat_fill(cmat, centries);
+
+    mat_row_op3(mat, 1, 2, -1);
+    assert(mat_equal(cmat, mat));
+
+    return;
+}
 
 //===========================================================================================
 //===========================================================================================
 
 // run tests:
 int main() {
+
+    // data structure:
     test_mat_create();
     test_mat_set_entry();
     test_mat_get_entry();
@@ -136,6 +178,11 @@ int main() {
     test_mat_equal();
     test_mat_get_rows();
     test_mat_get_cols();
+
+    // mathematics:
+    test_mat_row_op1();
+    test_mat_row_op2();
+    test_mat_row_op3();
     
     return 0;
 }
