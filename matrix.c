@@ -66,8 +66,8 @@ void mat_print(Matrix *mat) {
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double element = mat_get_element(mat, i, j);
-            printf("%6.2f ", element);
+            double entry = mat_get_entry(mat, i, j);
+            printf("%6.2f ", entry);
         }
         printf("\n");
     }
@@ -90,15 +90,15 @@ int mat_equal(Matrix *mat1, Matrix *mat2) {
 }
 
 // make sure length of rows_arr is row_mat->rows
-void mat_copy_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
+void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
     int rows = row_mat->rows;
     int cols = mat->cols;
 
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double element = mat_get_element(mat, rows_arr[i], j);
-            mat_set_element(row_mat, i, j, element);
+            double entry = mat_get_entry(mat, rows_arr[i], j);
+            mat_set_entry(row_mat, i, j, entry);
         }
     }
 
@@ -106,15 +106,15 @@ void mat_copy_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
 }
 
 // make sure length of cols_arr is col_mat->cols
-Matrix *mat_copy_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
+void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
     int rows = mat->rows;
     int cols = col_mat->cols;
 
     int i, j;
     for (j=0; j<cols; j++) {
         for (i=0; i<rows; i++) {
-            double element = mat_get_element(mat, i, cols_arr[j]);
-            mat_set_element(col_mat, i, j, element);
+            double entry = mat_get_entry(mat, i, cols_arr[j]);
+            mat_set_entry(col_mat, i, j, entry);
         }
     }
 
@@ -124,25 +124,25 @@ Matrix *mat_copy_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
 
 // mathematics:
 
-// elementary row operations:
+// entryary row operations:
 
 // (type 1) swaps rows i,j
 void mat_row_op1(Matrix *mat, int i, int j) {
     int cols = mat->cols;
     int rows_arr[1] = {i};
     Matrix *temp_i = mat_create(1, cols);
-    mat_copy_rows(mat, temp_i, rows_arr);
+    mat_get_rows(mat, temp_i, rows_arr);
     int col;
     for (col=0; col<cols; col=col+1) {
-        double element_j = mat_get_element(mat, j, col);
-        mat_set_element(mat, i, col, element_j);
-        double element_i = mat_get_element(temp_i, 0, col);
-        mat_set_element(mat, j, col, element_i);
+        double entry_j = mat_get_entry(mat, j, col);
+        mat_set_entry(mat, i, col, entry_j);
+        double entry_i = mat_get_entry(temp_i, 0, col);
+        mat_set_entry(mat, j, col, entry_i);
     }
 
-    mat_delete(temp);
+    mat_delete(temp_i);
     
-    return mat;
+    return;
 }
 
 // (type 2) multiplies row i by a constant k
@@ -150,9 +150,11 @@ void mat_row_op2(Matrix *mat, int i, double k) {
     int cols = mat->cols;
     int j;
     for (j=0; j<cols; j=j+1) {
-        double element = k*mat_get_element(mat, i, j);
-        mat_set_element(mat, i, j, element);
+        double entry = k*mat_get_entry(mat, i, j);
+        mat_set_entry(mat, i, j, entry);
     }
+
+    return;
 }
 
 // (type 3) multiplies row j by constant k and adds it to row i
@@ -160,7 +162,9 @@ void mat_row_op3(Matrix *mat, int i, int j, double k) {
     int cols = mat->cols;
     int col;
     for (col=0; col<cols; col=col+1) {
-        double element = mat_get_element(mat, i, col) + k*mat_get_element(mat, j, col);
-        mat_set_element(mat, i, col, element);
+        double entry = mat_get_entry(mat, i, col) + k*mat_get_entry(mat, j, col);
+        mat_set_entry(mat, i, col, entry);
     }
+
+    return;
 }

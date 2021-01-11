@@ -78,11 +78,46 @@ void test_mat_equal() {
     return;
 }
 
-void test_mat_copy_rows() {
+void test_mat_get_rows() {
+    Matrix *m = mat_create(3, 3);
+    Matrix *rm = mat_create(2, 3);
+    Matrix *rmc = mat_create(2, 3);
 
+    double m_entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double rmc_entries[6] = {4, 5, 6, 7, 8, 9};
+
+    mat_fill(m, m_entries);
+    mat_fill(rmc, rmc_entries);
+    int rows_arr[2] = {1, 2};
+    mat_get_rows(m, rm, rows_arr);
+
+    assert(mat_equal(rm, rmc));
+    mat_delete(m);
+    mat_delete(rm);
+    mat_delete(rmc);
+
+    return;
 }
 
-void test_mat_copy_cols() {
+void test_mat_get_cols() {
+     Matrix *m = mat_create(3, 3);
+    Matrix *cm = mat_create(2, 3);
+    Matrix *cmc = mat_create(2, 3);
+
+    double m_entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double cmc_entries[6] = {1, 2, 4, 5, 7, 8};
+
+    mat_fill(m, m_entries);
+    mat_fill(cmc, cmc_entries);
+    int cols_arr[2] = {0, 1};
+    mat_get_cols(m, cm, cols_arr);
+
+    assert(mat_equal(cm, cmc));
+    mat_delete(m);
+    mat_delete(cm);
+    mat_delete(cmc);
+
+    return;
     
 } 
 
@@ -99,6 +134,8 @@ int main() {
     test_mat_get_entry();
     test_mat_fill();
     test_mat_equal();
+    test_mat_get_rows();
+    test_mat_get_cols();
     
     return 0;
 }
