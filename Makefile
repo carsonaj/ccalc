@@ -15,7 +15,10 @@ array.o: array.c
 objects: array.o matrix.o
 
 tests: array_tests matrix_tests
-	./array_tests ./matrix_tests
+	./array_tests 
+	valgrind ./array_tests
+	./matrix_tests
+	valgrind ./matrix_tests
 
 clean: 
 	rm array_tests matrix_tests array.o matrix.o

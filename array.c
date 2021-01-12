@@ -18,3 +18,13 @@ int arr_equal(double *arr1, double *arr2, int len1, int len2) {
     }
     return TRUE;
 }
+
+double arr_sum(double *arr, int len) {
+    int i;
+    double sum = 0;
+    for (i=0; i<len; i++) {
+        sum = sum + arr[i];
+    }
+
+    return sum;
+}

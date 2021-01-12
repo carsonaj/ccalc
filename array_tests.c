@@ -14,12 +14,20 @@ void test_arr_equal() {
     assert(arr_equal(arr1, arr4, 3, 3));
 
 }
+
+void test_arr_sum() {
+    double arr[3] = {2, 1, -1};
+    assert(arr_sum(arr, 3) == 2.0);
+
+    return;
+}
 //===========================================================================================
 //===========================================================================================
 
 // run tests:
 int main() {
-    test_arr_equal;
+    test_arr_equal();
+    test_arr_sum(); 
     
     return 0;
 }
