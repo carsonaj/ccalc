@@ -168,3 +168,103 @@ void mat_row_op3(Matrix *mat, int i, int j, double k) {
 
     return;
 }
+
+// standard matrix product
+void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
+    assert(A->cols == B->rows);
+    assert(A->rows == prod->rows);
+    assert(B->cols == prod->cols);
+    int m, n, p;
+    m = A->rows;
+    n = A->cols;
+    p = B->cols;
+
+    int i,j;
+    for (i=0; i<m; i=i+1) {
+        for (j=0; j<p; j=j+1) {
+
+            double kron_prod[n];
+            int k;
+            for (k=0; k<n; k=k+1) {
+                kron_prod[k] = mat_get_entry(A, i, k) * mat_get_entry(B, k, j);
+            }
+
+            double entry = arr_sum(kron_prod, n);
+            mat_set_entry(prod, i, j, entry);
+        }
+    }
+
+    return;
+}
+
+// Hadamard product
+void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
+    assert(A->rows == B->rows);
+    assert(A->cols == B->cols);
+    assert(A->rows == prod->rows);
+    assert(A->cols == prod->cols);
+
+    int rows = A->rows;
+    int cols = A->cols;
+
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double entry = mat_get_entry(A, i, j) * mat_get_entry(B, i, j);
+            mat_set_entry(prod, i, j, entry);
+        }
+    }
+
+    return;
+}
+
+void mat_scale(double k, Matrix *mat) {
+    int rows = mat->rows;
+    int cols = mat->cols;
+
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double entry = k * mat_get_entry(mat, i, j);
+            mat_set_entry(mat, i, j, entry);
+        }
+    }
+
+    return;
+}
+
+void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
+    assert(A->rows == B->rows);
+    assert(A->cols == B->cols);
+    assert(A->rows == sum->rows);
+    assert(A->cols == sum->cols);
+    int m = A->rows;
+    int n = A->cols;
+
+    int i,j;
+    for (i=0; i<m; i=i+1) {
+        for (j=0; j<n; j=j+1) {
+            double entry = mat_get_entry(A, i, j) + mat_get_entry(B, i, j);
+            mat_set_entry(sum, i, j, entry);
+        }
+    }
+
+    return;
+}
+
+void mat_transpose(Matrix *mat) {
+    int rows = mat->rows;
+    int cols = mat->cols;
+
+    int i, j;
+    for (i=1; i<rows; i++) {
+        for (j=0; j<i; j++) {
+            double entry_ij = mat_get_entry(mat, i, j);
+            double entry_ji = mat_get_entry(mat, j, i);
+            mat_set_entry(mat, j, i, entry_ij);
+            mat_set_entry(mat, i, j, entry_ji);
+        }
+    }
+
+    return;
+}
