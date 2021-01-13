@@ -1,12 +1,4 @@
-VPATH = include:src:tests:obj:lib
-
-install: build
-	cp -i ./lib/libccalc.so /usr/local/lib/ccalc
-
-uninstall: 
-	rm -r /usr/local/lib/ccalc
-
-build: tests lib
+build: lib
 
 tests: array_tests matrix_tests
 	test/array_tests 

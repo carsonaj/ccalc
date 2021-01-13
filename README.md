@@ -13,6 +13,7 @@ make build
 To install the `libccalc` shared library, enter the commands
 
 ```
-sudo cp -i ./lib/libccalc.so /usr/local/lib/ccalc
+sudo mkdir /usr/local/lib/ccalc
+sudo cp -i ./lib/libccalc.so /usr/local/lib/ccalc/libccalc.so
 sudo ldconfig
 ```
