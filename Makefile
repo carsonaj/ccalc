@@ -1,12 +1,13 @@
 install: build
-	sudo cp -i ./lib/libccalc.so /usr/local/lib
-	sudo cp -i ./include/*.h /usr/local/include
-	sudo ldconfig
+	sudo mkdir /usr/local/lib/ccalc
+	sudo cp -i ./lib/libccalc.so /usr/local/lib/ccalc
+	sudo mkdir /usr/local/include/ccalc
+	sudo cp -i ./include/*.h /usr/local/include/ccalc
+	sudo ldconfig /usr/local/lib/ccalc
 
 uninstall: 
-	sudo rm /usr/local/lib/libccalc.so
-	sudo rm /usr/local/include/array.h /usr/local/include/matrix.h 
-	sudo ldconfig
+	sudo rm -r /usr/local/lib/ccalc
+	sudo rm -r /usr/local/include/ccalc
 
 build: lib
 
