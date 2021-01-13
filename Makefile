@@ -1,3 +1,13 @@
+install: build
+	sudo cp -i ./lib/libccalc.so /usr/local/lib
+	sudo cp -i ./include/*.h /usr/local/include
+	sudo ldconfig
+
+uninstall: 
+	sudo rm /usr/local/lib/libccalc.so
+	sudo rm /usr/local/include/array.h /usr/local/include/matrix.h 
+	sudo ldconfig
+
 build: lib
 
 tests: array_tests matrix_tests
