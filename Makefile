@@ -1,24 +1,35 @@
-all: tests objects
+VPATH = include:src:tests:obj:lib
 
-matrix_tests: matrix_tests.c matrix.c array.c
-	gcc matrix_tests.c matrix.c array.c -o matrix_tests
+install: build
+	cp -i ./lib/libccalc.so /usr/local/lib/ccalc
 
-array_tests: array_tests.c array.c
-	gcc array_tests.c array.c -o array_tests
+uninstall: 
+	rm -r /usr/local/lib/ccalc
 
-matrix.o: matrix.c 
-	gcc -c matrix.c -o matrix.o
-
-array.o: array.c 
-	gcc -c array.c -o array.o
-
-objects: array.o matrix.o
+build: tests lib
 
 tests: array_tests matrix_tests
-	./array_tests 
-	valgrind ./array_tests
-	./matrix_tests
-	valgrind ./matrix_tests
+	test/array_tests 
+	valgrind test/array_tests
+	test/matrix_tests
+	valgrind test/matrix_tests
+
+array_tests: ./test/array_tests.c ./src/array.c
+	gcc ./test/array_tests.c ./src/array.c -o test/array_tests
+
+matrix_tests: 
+	gcc ./test/matrix_tests.c ./src/matrix.c ./src/array.c -o test/matrix_tests
+
+lib: array.o matrix.o
+	gcc -shared ./obj/array.o ./obj/matrix.o -o lib/libccalc.so 
+
+matrix.o: matrix.c 
+	gcc -c ./src/matrix.c -o ./obj/matrix.o
+
+array.o: array.c 
+	gcc -c ./src/array.c -o ./obj/array.o
 
 clean: 
-	rm array_tests matrix_tests array.o matrix.o
+	rm -f ./obj/*
+	rm -f ./lib/*
+	rm -f ./test/*_tests

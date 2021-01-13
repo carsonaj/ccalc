@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-# include "array.h"
+# include "../include/array.h"
 
 // define tests:
 void test_arr_equal() {

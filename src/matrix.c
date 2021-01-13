@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "array.h"
-#include "matrix.h"
+#include "../include/array.h"
+#include "../include/matrix.h"
 
 #define TRUE 1
 #define FALSE 0
