@@ -30,6 +30,6 @@ array.o: array.c
 	gcc -c ./src/array.c -o ./obj/array.o
 
 clean: 
-	rm -f ./obj/*
-	rm -f ./lib/*
+	rm -f ./obj/*.o
+	rm -f ./lib/*.so
 	rm -f ./test/*_tests
