@@ -25,10 +25,10 @@ matrix_tests:
 lib: array.o matrix.o
 	gcc -shared ./obj/array.o ./obj/matrix.o -o lib/libccalc.so 
 
-matrix.o: matrix.c 
+matrix.o: 
 	gcc -c ./src/matrix.c -o ./obj/matrix.o
 
-array.o: array.c 
+array.o: 
 	gcc -c ./src/array.c -o ./obj/array.o
 
 clean: 
