@@ -6,8 +6,8 @@
 typedef struct Matrix Matrix;
 
 struct Matrix {
-    int rows;
-    int cols;
+    int nrow;
+    int ncol;
     double *data;
 };
 

@@ -13,8 +13,8 @@
 
 void test_mat_create() {
     Matrix *mat2 = mat_create(2, 3);
-    assert(mat2->rows == 2);
-    assert(mat2->cols == 3);
+    assert(mat2->nrow == 2);
+    assert(mat2->ncol == 3);
     mat_delete(mat2);
 
     return;
