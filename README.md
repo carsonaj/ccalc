@@ -2,17 +2,16 @@
 
 ## Installation:
 
-To download and build, open a terminal and enter the following commands:
+To download, open a terminal and enter the following command:
 
 ```
 git clone https://github.com/carsonaj/ccalc.git
+```
+
+To install, enter the following commands:
+
+```
 cd ccalc
-make build 
-```
-
-To install, enter the following command:
-
-```
 make install
 ```
 
