@@ -11,6 +11,11 @@ uninstall:
 
 build: lib
 
+clean: 
+	rm -f ./obj/*.o
+	rm -f ./lib/*.so
+	rm -f ./test/*_tests
+
 tests: array_tests matrix_tests
 	test/array_tests 
 	valgrind test/array_tests
@@ -31,8 +36,3 @@ matrix.o:
 
 array.o: 
 	gcc -c ./src/array.c -o ./obj/array.o
-
-clean: 
-	rm -f ./obj/*.o
-	rm -f ./lib/*.so
-	rm -f ./test/*_tests

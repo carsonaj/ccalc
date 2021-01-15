@@ -45,7 +45,7 @@ void test_mat_fill() {
     
     int i;
     for (i=1; i<6; i++) {
-        assert(mat->data[i] = i+1);
+        assert(mat->data[i] == i+1);
     }
 
     mat_delete(mat);
