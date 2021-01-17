@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../include/type.h"
 #include "../include/array.h"
 #include "../include/matrix.h"
 
@@ -21,21 +20,16 @@ Matrix *mat_create(dtype t, int n, int p) {
     mat->type = t;
     mat->nrow = n;
     mat->ncol = p;
-    switch(t) {
-        case DBL: 
-            mat->data.vals.dblvals = malloc((n * p) * sizeof(double));
-            break;
-        case PLY:
-            break;
-    }
-    assert(mat->data.vals.dblvals != NULL);
+    mat->entries = malloc((n * p) * sizeof(tvalue));
+
+    assert(mat->entries != NULL);
 
     return mat;
 }
 
 void mat_delete(Matrix *mat) {
     assert(mat != NULL);
-    free(mat->data.vals.dblvals);
+    free(mat->entries);
     free(mat);
 
     return;
@@ -64,48 +58,32 @@ void mat_print(Matrix *mat) {
 void mat_set_entry(Matrix *mat, int i, int j, tvalue tval){
     dtype t = mat->type;
     dtype s = tval.type;
-    dtype u = mat->data.type;
-    assert((t == s) && (t == u));
+    assert(t == s);
     assert((i <= mat->nrow) && (j <= mat->ncol));
-    switch(t) {
-        case DBL:
-            mat->data.vals.dblvals[i * mat->ncol + j] = tval.val.dblval;
-            break;
-        case PLY:
-            break;
-    }
-
+    mat->entries[i * mat->ncol + j] = tval;
+    
     return;
 }
 
 tvalue mat_get_entry(Matrix *mat, int i, int j) {
     assert((i <= mat->nrow) && (j <= mat->ncol));
-    dtype t = mat->type;
-    tvalue entry;
-    switch(t) {
-        case DBL:
-            entry = tdbl(mat->data.vals.dblvals[i * mat->ncol + j]);
-            break;
-        case PLY:
-            break;
-    }
+    tvalue entry = mat->entries[i * mat->ncol + j];
 
     return entry;
 } 
 
 // fill by row
 // make sure length of entries is rows*cols
-void mat_fill(Matrix *mat, tvalues entries) {
+void mat_fill(Matrix *mat, tvalue *entries) {
     dtype t = mat->type;
-    dtype s = entries.type;
-    dtype u = mat->data.type;
-    assert((t == s) && (t == u));
     int n = mat->nrow;
     int p = mat->ncol;
 
     int i;
     for (i=0; i<n*p; i++) {
-        mat->data.vals.dblvals[i] = entries.vals.dblvals[i];
+        dtype s = entries[i].type;
+        assert(t == s);
+        mat->entries[i] = entries[i];
     }
 
     return;
@@ -129,7 +107,7 @@ int mat_equal(Matrix *mat1, Matrix *mat2) {
         return FALSE;
     }
 
-    int b4 = arr_equal(mat1->data.vals.dblvals, mat2->data.vals.dblvals, n1 * p1, n2 * p2);
+    int b4 = arr_equal(mat1->entries, mat2->entries, n1 * p1, n2 * p2);
     if (b4 == FALSE) {
         return FALSE;
     }
@@ -140,6 +118,9 @@ int mat_equal(Matrix *mat1, Matrix *mat2) {
 
 // make sure length of rows_arr is row_mat->nrow
 void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
+    dtype s = mat->type;
+    dtype t = row_mat->type;
+    assert(s == t);
     int rows = row_mat->nrow;
     int cols = mat->ncol;
 
@@ -156,6 +137,9 @@ void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
 
 // make sure length of cols_arr is col_mat->ncol
 void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
+    dtype s = mat->type;
+    dtype t = col_mat->type;
+    assert(s == t);
     int rows = mat->nrow;
     int cols = col_mat->ncol;
 
@@ -178,12 +162,12 @@ void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
 // (type 1) swaps rows i,j
 void mat_row_op1(Matrix *mat, int i, int j) {
     dtype t = mat->type;
-    int cols = mat->ncol;
+    int ncol = mat->ncol;
     int rows_arr[1] = {i};
-    Matrix *temp_i = mat_create(t, 1, cols);
+    Matrix *temp_i = mat_create(t, 1, ncol);
     mat_get_rows(mat, temp_i, rows_arr);
     int col;
-    for (col=0; col<cols; col=col+1) {
+    for (col=0; col<ncol; col=col+1) {
         tvalue entry_j = mat_get_entry(mat, j, col);
         mat_set_entry(mat, i, col, entry_j);
         tvalue entry_i = mat_get_entry(temp_i, 0, col);
@@ -196,11 +180,14 @@ void mat_row_op1(Matrix *mat, int i, int j) {
 }
 
 // (type 2) multiplies row i by a constant k
-void mat_row_op2(Matrix *mat, int i, double k) {
-    int cols = mat->ncol;
+void mat_row_op2(Matrix *mat, int i, tvalue k) {
+    dtype t = mat->type;
+    dtype s = k.type;
+    assert(t == s);
+    int ncol = mat->ncol;
     int j;
-    for (j=0; j<cols; j=j+1) {
-        double entry = k * mat_get_entry(mat, i, j);
+    for (j=0; j<ncol; j=j+1) {
+        tvalue entry = t_product(k, mat_get_entry(mat, i, j));
         mat_set_entry(mat, i, j, entry);
     }
 
@@ -208,11 +195,15 @@ void mat_row_op2(Matrix *mat, int i, double k) {
 }
 
 // (type 3) multiplies row j by constant k and adds it to row i
-void mat_row_op3(Matrix *mat, int i, int j, double k) {
+void mat_row_op3(Matrix *mat, int i, int j, tvalue k) {
+    dtype t = mat->type;
+    dtype s = k.type;
+    assert(t == s);
     int cols = mat->ncol;
     int col;
     for (col=0; col<cols; col=col+1) {
-        double entry = mat_get_entry(mat, i, col) + k * mat_get_entry(mat, j, col);
+        tvalue entry = t_product(k, mat_get_entry(mat, j, col));
+        entry = t_sum(mat_get_entry(mat, i, col), entry);
         mat_set_entry(mat, i, col, entry);
     }
 
@@ -221,6 +212,7 @@ void mat_row_op3(Matrix *mat, int i, int j, double k) {
 
 // standard matrix product
 void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
+    assert(A->type == B->type);
     assert(A->ncol == B->nrow);
     assert(A->nrow == prod->nrow);
     assert(B->ncol == prod->ncol);
@@ -233,13 +225,13 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
     for (i=0; i<m; i=i+1) {
         for (j=0; j<p; j=j+1) {
 
-            double kron_prod[n];
+            tvalue kron_prod[n];
             int k;
             for (k=0; k<n; k=k+1) {
-                kron_prod[k] = mat_get_entry(A, i, k) * mat_get_entry(B, k, j);
+                kron_prod[k] = t_product(mat_get_entry(A, i, k), mat_get_entry(B, k, j));
             }
 
-            double entry = arr_sum(kron_prod, n);
+            tvalue entry = arr_sum(kron_prod, n);
             mat_set_entry(prod, i, j, entry);
         }
     }
@@ -249,18 +241,19 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
 
 // Hadamard product
 void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
+    assert(A->type == B->type);
     assert(A->nrow == B->nrow);
     assert(A->ncol == B->ncol);
     assert(A->nrow == prod->nrow);
     assert(A->ncol == prod->ncol);
 
-    int rows = A->nrow;
-    int cols = A->ncol;
+    int nrow = A->nrow;
+    int ncol = A->ncol;
 
     int i, j;
-    for (i=0; i<rows; i++) {
-        for (j=0; j<cols; j++) {
-            double entry = mat_get_entry(A, i, j) * mat_get_entry(B, i, j);
+    for (i=0; i<nrow; i++) {
+        for (j=0; j<ncol; j++) {
+            tvalue entry = t_product(mat_get_entry(A, i, j), mat_get_entry(B, i, j));
             mat_set_entry(prod, i, j, entry);
         }
     }
@@ -268,14 +261,14 @@ void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
     return;
 }
 
-void mat_scale(double k, Matrix *mat) {
-    int rows = mat->nrow;
-    int cols = mat->ncol;
+void mat_scale(tvalue k, Matrix *mat) {
+    int nrow = mat->nrow;
+    int ncol = mat->ncol;
 
     int i, j;
-    for (i=0; i<rows; i++) {
-        for (j=0; j<cols; j++) {
-            double entry = k * mat_get_entry(mat, i, j);
+    for (i=0; i<nrow; i++) {
+        for (j=0; j<ncol; j++) {
+            tvalue entry = t_product(k, mat_get_entry(mat, i, j));
             mat_set_entry(mat, i, j, entry);
         }
     }
@@ -294,7 +287,7 @@ void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
-            double entry = mat_get_entry(A, i, j) + mat_get_entry(B, i, j);
+            tvalue entry = t_sum(mat_get_entry(A, i, j), mat_get_entry(B, i, j));
             mat_set_entry(sum, i, j, entry);
         }
     }
@@ -309,8 +302,8 @@ void mat_transpose(Matrix *mat) {
     int i, j;
     for (i=1; i<rows; i++) {
         for (j=0; j<i; j++) {
-            double entry_ij = mat_get_entry(mat, i, j);
-            double entry_ji = mat_get_entry(mat, j, i);
+            tvalue entry_ij = mat_get_entry(mat, i, j);
+            tvalue entry_ji = mat_get_entry(mat, j, i);
             mat_set_entry(mat, j, i, entry_ij);
             mat_set_entry(mat, i, j, entry_ji);
         }

@@ -6,24 +6,25 @@
 #define TRUE 1
 #define FALSE 0
 
-int arr_equal(double *arr1, double *arr2, int len1, int len2) {
+int arr_equal(tvalue *arr1, tvalue *arr2, int len1, int len2) {
     if (len1 != len2) {
         return FALSE;
     }
     int i;
     for (i=0; i<len1; i++) {
-        if (arr1[i] != arr2[i]) {
+        if (t_equal(arr1[i], arr2[i]) == FALSE) {
             return FALSE;
         }
     }
     return TRUE;
 }
 
-double arr_sum(double *arr, int len) {
+tvalue arr_sum(tvalue *arr, int len) {
+    dtype t = arr[0].type;
+    tvalue sum = zero(t);
     int i;
-    double sum = 0;
     for (i=0; i<len; i++) {
-        sum = sum + arr[i];
+        sum = t_sum(sum, arr[i]);
     }
 
     return sum;

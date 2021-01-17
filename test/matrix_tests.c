@@ -23,8 +23,8 @@ void test_mat_create() {
 
 void test_mat_set_entry() {
     Matrix *mat = mat_create(DBL, 3, 4);
-    mat_set_entry(mat, 1, 2, tdbl(.5));
-    assert(mat->data.vals.dblvals[6] == .5);
+    mat_set_entry(mat, 1, 2, t_dbl(.5));
+    assert(mat->entries[6].val.dblval == .5);
     mat_delete(mat);
 
     return;

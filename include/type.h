@@ -17,21 +17,19 @@ union value {
     double dblval;
 };
 
-union values {
-    double *dblvals;
-};
-
 struct tvalue {
     dtype type;
     value val;
 };
 
-struct tvalues {
-    dtype type;
-    values vals;
-};
+// data structure:
+tvalue t_dbl(double val);
+void t_dbls(double *vals, tvalue *tvals, int len);
 
-tvalue tdbl(double val);
-tvalues tdbls(double *vals);
+// mathematics:
+tvalue zero(dtype type);
+int t_equal(tvalue tval1, tvalue tval2);
+tvalue t_sum(tvalue tval1, tvalue tval2);
+tvalue t_product(tvalue tval1, tvalue tval2);
 
 #endif

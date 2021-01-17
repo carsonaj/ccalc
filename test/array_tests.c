@@ -1,23 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-# include "../include/array.h"
+#include "../include/type.h"
+#include "../include/array.h"
 
 // define tests:
 void test_arr_equal() {
     double arr1[3] = {2, 4,-1};
+    tvalue tarr1[3];
+    t_dbls(arr1, tarr1, 3);
+
     double arr2[2] = {1, 2};
+    tvalue tarr2[2];
+    t_dbls(arr2, tarr2, 2);
+
     double arr3[3] = {2, 4, -2};
+    tvalue tarr3[3];
+    t_dbls(arr3, tarr3, 3);
+
     double arr4[3] = {2, 4, -1};
-    assert(!arr_equal(arr1, arr2, 3, 2));
-    assert(!arr_equal(arr1, arr3, 3, 3));
-    assert(arr_equal(arr1, arr4, 3, 3));
+    tvalue tarr4[3];
+    t_dbls(arr4, tarr4, 3);
+
+    assert(!arr_equal(tarr1, tarr2, 3, 2));
+    assert(!arr_equal(tarr1, tarr3, 3, 3));
+    assert(arr_equal(tarr1, tarr4, 3, 3));
 
 }
 
 void test_arr_sum() {
     double arr[3] = {2, 1, -1};
-    assert(arr_sum(arr, 3) == 2.0);
+    tvalue tarr[3];
+    t_dbls(arr, tarr, 3);
+    assert(arr_sum(tarr, 3).val.dblval == 2.0);
 
     return;
 }

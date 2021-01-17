@@ -23,10 +23,10 @@ tests: array_tests matrix_tests
 	valgrind test/matrix_tests
 
 array_tests: ./test/array_tests.c ./src/array.c
-	gcc ./test/array_tests.c ./src/array.c -o test/array_tests
+	gcc ./test/array_tests.c ./src/array.c ./src/type.c -o test/array_tests
 
 matrix_tests: 
-	gcc ./test/matrix_tests.c ./src/matrix.c ./src/array.c -o test/matrix_tests
+	gcc ./test/matrix_tests.c ./src/matrix.c ./src/array.c ./src/type.c -o test/matrix_tests
 
 lib: array.o matrix.o
 	gcc -shared ./obj/array.o ./obj/matrix.o -o lib/libccalc.so 
