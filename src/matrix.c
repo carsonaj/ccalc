@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "../include/type.h"
 #include "../include/array.h"
 #include "../include/matrix.h"
 
@@ -10,95 +11,143 @@
 
 // data structure:
 
-DoubleMatrix *dblmat_create(int n, int p) {
+Matrix *mat_create(dtype t, int n, int p) {
     assert(n * p <= MAX_SIZE);
     assert((n > 0) && (p > 0));
 
-    DoubleMatrix *mat = malloc(sizeof(DoubleMatrix));
+
+    Matrix *mat = malloc(sizeof(Matrix));
     assert(mat != NULL);
+    mat->type = t;
     mat->nrow = n;
     mat->ncol = p;
-    mat->data = malloc(n * p * sizeof(double));
-    assert(mat->data != NULL);
+    switch(t) {
+        case DBL: 
+            mat->data.vals.dblvals = malloc((n * p) * sizeof(double));
+            break;
+        case PLY:
+            break;
+    }
+    assert(mat->data.vals.dblvals != NULL);
 
     return mat;
 }
 
-void dblmat_delete(DoubleMatrix *mat) {
+void mat_delete(Matrix *mat) {
     assert(mat != NULL);
-    free(mat->data);
+    free(mat->data.vals.dblvals);
     free(mat);
 
     return;
 }
 
-void dblmat_print(DoubleMatrix *mat) {
+void mat_print(Matrix *mat) {
+    dtype t = mat->type;
     int rows = mat->nrow;
     int cols = mat->ncol;
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double entry = dblmat_get_entry(mat, i, j);
-            printf("%6.2f ", entry);
+            tvalue entry = mat_get_entry(mat, i, j);
+            switch(t) {
+                case DBL: 
+                    printf("%6.2f ", entry.val.dblval);
+                    break;
+                case PLY:
+                    break;
+            }
         }
         printf("\n");
     }
 }
 
-void dblmat_set_entry(DoubleMatrix *mat, int i, int j, double val){
+void mat_set_entry(Matrix *mat, int i, int j, tvalue tval){
+    dtype t = mat->type;
+    dtype s = tval.type;
+    dtype u = mat->data.type;
+    assert((t == s) && (t == u));
     assert((i <= mat->nrow) && (j <= mat->ncol));
-    mat->data[i * mat->ncol + j] = val;
+    switch(t) {
+        case DBL:
+            mat->data.vals.dblvals[i * mat->ncol + j] = tval.val.dblval;
+            break;
+        case PLY:
+            break;
+    }
 
     return;
 }
 
-double dblmat_get_entry(DoubleMatrix *mat, int i, int j) {
+tvalue mat_get_entry(Matrix *mat, int i, int j) {
     assert((i <= mat->nrow) && (j <= mat->ncol));
-    double entry = mat->data[i * mat->ncol + j];
+    dtype t = mat->type;
+    tvalue entry;
+    switch(t) {
+        case DBL:
+            entry = tdbl(mat->data.vals.dblvals[i * mat->ncol + j]);
+            break;
+        case PLY:
+            break;
+    }
 
     return entry;
 } 
 
 // fill by row
 // make sure length of entries is rows*cols
-void dblmat_fill(DoubleMatrix *mat, double *entries) {
+void mat_fill(Matrix *mat, tvalues entries) {
+    dtype t = mat->type;
+    dtype s = entries.type;
+    dtype u = mat->data.type;
+    assert((t == s) && (t == u));
     int n = mat->nrow;
     int p = mat->ncol;
 
     int i;
     for (i=0; i<n*p; i++) {
-        mat->data[i] = entries[i];
+        mat->data.vals.dblvals[i] = entries.vals.dblvals[i];
     }
 
     return;
 }
 
-int dblmat_equal(DoubleMatrix *mat1, DoubleMatrix *mat2) {
+int mat_equal(Matrix *mat1, Matrix *mat2) {
+    dtype t1 = mat1->type;
+    dtype t2 = mat2->type;
+    int b1 = (t1 == t2);
+    if (b1 == FALSE) {
+        return FALSE;
+    }
+
     int n1 = mat1->nrow;
     int p1 = mat1->ncol;
     int n2 = mat2->nrow;
     int p2 = mat2->ncol;
-    int b1 = (n1 == n2);
-    int b2 = (p1 == p2);
-    int b3 = arr_equal(mat1->data, mat2->data, n1 * p1, n2 * p2);
-
-    if (b1 && b2 && b3) {
-        return TRUE;
+    int b2 = (n1 == n2);
+    int b3 = (p1 == p2);
+    if ((b2 && b3) == FALSE) {
+        return FALSE;
     }
-    return FALSE;
+
+    int b4 = arr_equal(mat1->data.vals.dblvals, mat2->data.vals.dblvals, n1 * p1, n2 * p2);
+    if (b4 == FALSE) {
+        return FALSE;
+    }
+
+    return TRUE;
 
 }
 
 // make sure length of rows_arr is row_mat->nrow
-void dblmat_get_rows(DoubleMatrix *mat, DoubleMatrix *row_mat, int *rows_arr) {
+void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr) {
     int rows = row_mat->nrow;
     int cols = mat->ncol;
 
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double entry = dblmat_get_entry(mat, rows_arr[i], j);
-            dblmat_set_entry(row_mat, i, j, entry);
+            tvalue entry = mat_get_entry(mat, rows_arr[i], j);
+            mat_set_entry(row_mat, i, j, entry);
         }
     }
 
@@ -106,15 +155,15 @@ void dblmat_get_rows(DoubleMatrix *mat, DoubleMatrix *row_mat, int *rows_arr) {
 }
 
 // make sure length of cols_arr is col_mat->ncol
-void dblmat_get_cols(DoubleMatrix *mat, DoubleMatrix *col_mat, int *cols_arr) {
+void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
     int rows = mat->nrow;
     int cols = col_mat->ncol;
 
     int i, j;
     for (j=0; j<cols; j++) {
         for (i=0; i<rows; i++) {
-            double entry = dblmat_get_entry(mat, i, cols_arr[j]);
-            dblmat_set_entry(col_mat, i, j, entry);
+            tvalue entry = mat_get_entry(mat, i, cols_arr[j]);
+            mat_set_entry(col_mat, i, j, entry);
         }
     }
 
@@ -127,50 +176,51 @@ void dblmat_get_cols(DoubleMatrix *mat, DoubleMatrix *col_mat, int *cols_arr) {
 // elementary row operations:
 
 // (type 1) swaps rows i,j
-void dblmat_row_op1(DoubleMatrix *mat, int i, int j) {
+void mat_row_op1(Matrix *mat, int i, int j) {
+    dtype t = mat->type;
     int cols = mat->ncol;
     int rows_arr[1] = {i};
-    DoubleMatrix *temp_i = dblmat_create(1, cols);
-    dblmat_get_rows(mat, temp_i, rows_arr);
+    Matrix *temp_i = mat_create(t, 1, cols);
+    mat_get_rows(mat, temp_i, rows_arr);
     int col;
     for (col=0; col<cols; col=col+1) {
-        double entry_j = dblmat_get_entry(mat, j, col);
-        dblmat_set_entry(mat, i, col, entry_j);
-        double entry_i = dblmat_get_entry(temp_i, 0, col);
-        dblmat_set_entry(mat, j, col, entry_i);
+        tvalue entry_j = mat_get_entry(mat, j, col);
+        mat_set_entry(mat, i, col, entry_j);
+        tvalue entry_i = mat_get_entry(temp_i, 0, col);
+        mat_set_entry(mat, j, col, entry_i);
     }
 
-    dblmat_delete(temp_i);
+    mat_delete(temp_i);
     
     return;
 }
 
 // (type 2) multiplies row i by a constant k
-void dblmat_row_op2(DoubleMatrix *mat, int i, double k) {
+void mat_row_op2(Matrix *mat, int i, double k) {
     int cols = mat->ncol;
     int j;
     for (j=0; j<cols; j=j+1) {
-        double entry = k * dblmat_get_entry(mat, i, j);
-        dblmat_set_entry(mat, i, j, entry);
+        double entry = k * mat_get_entry(mat, i, j);
+        mat_set_entry(mat, i, j, entry);
     }
 
     return;
 }
 
 // (type 3) multiplies row j by constant k and adds it to row i
-void dblmat_row_op3(DoubleMatrix *mat, int i, int j, double k) {
+void mat_row_op3(Matrix *mat, int i, int j, double k) {
     int cols = mat->ncol;
     int col;
     for (col=0; col<cols; col=col+1) {
-        double entry = dblmat_get_entry(mat, i, col) + k * dblmat_get_entry(mat, j, col);
-        dblmat_set_entry(mat, i, col, entry);
+        double entry = mat_get_entry(mat, i, col) + k * mat_get_entry(mat, j, col);
+        mat_set_entry(mat, i, col, entry);
     }
 
     return;
 }
 
 // standard matrix product
-void dblmat_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod) {
+void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
     assert(A->ncol == B->nrow);
     assert(A->nrow == prod->nrow);
     assert(B->ncol == prod->ncol);
@@ -186,11 +236,11 @@ void dblmat_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod) {
             double kron_prod[n];
             int k;
             for (k=0; k<n; k=k+1) {
-                kron_prod[k] = dblmat_get_entry(A, i, k) * dblmat_get_entry(B, k, j);
+                kron_prod[k] = mat_get_entry(A, i, k) * mat_get_entry(B, k, j);
             }
 
             double entry = arr_sum(kron_prod, n);
-            dblmat_set_entry(prod, i, j, entry);
+            mat_set_entry(prod, i, j, entry);
         }
     }
 
@@ -198,7 +248,7 @@ void dblmat_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod) {
 }
 
 // Hadamard product
-void dblmat_had_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod) {
+void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
     assert(A->nrow == B->nrow);
     assert(A->ncol == B->ncol);
     assert(A->nrow == prod->nrow);
@@ -210,30 +260,30 @@ void dblmat_had_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod) {
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double entry = dblmat_get_entry(A, i, j) * dblmat_get_entry(B, i, j);
-            dblmat_set_entry(prod, i, j, entry);
+            double entry = mat_get_entry(A, i, j) * mat_get_entry(B, i, j);
+            mat_set_entry(prod, i, j, entry);
         }
     }
 
     return;
 }
 
-void dblmat_scale(double k, DoubleMatrix *mat) {
+void mat_scale(double k, Matrix *mat) {
     int rows = mat->nrow;
     int cols = mat->ncol;
 
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
-            double entry = k * dblmat_get_entry(mat, i, j);
-            dblmat_set_entry(mat, i, j, entry);
+            double entry = k * mat_get_entry(mat, i, j);
+            mat_set_entry(mat, i, j, entry);
         }
     }
 
     return;
 }
 
-void dblmat_sum(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *sum) {
+void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
     assert(A->nrow == B->nrow);
     assert(A->ncol == B->ncol);
     assert(A->nrow == sum->nrow);
@@ -244,25 +294,25 @@ void dblmat_sum(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *sum) {
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
-            double entry = dblmat_get_entry(A, i, j) + dblmat_get_entry(B, i, j);
-            dblmat_set_entry(sum, i, j, entry);
+            double entry = mat_get_entry(A, i, j) + mat_get_entry(B, i, j);
+            mat_set_entry(sum, i, j, entry);
         }
     }
 
     return;
 }
 
-void dblmat_transpose(DoubleMatrix *mat) {
+void mat_transpose(Matrix *mat) {
     int rows = mat->nrow;
     int cols = mat->ncol;
 
     int i, j;
     for (i=1; i<rows; i++) {
         for (j=0; j<i; j++) {
-            double entry_ij = dblmat_get_entry(mat, i, j);
-            double entry_ji = dblmat_get_entry(mat, j, i);
-            dblmat_set_entry(mat, j, i, entry_ij);
-            dblmat_set_entry(mat, i, j, entry_ji);
+            double entry_ij = mat_get_entry(mat, i, j);
+            double entry_ji = mat_get_entry(mat, j, i);
+            mat_set_entry(mat, j, i, entry_ij);
+            mat_set_entry(mat, i, j, entry_ji);
         }
     }
 

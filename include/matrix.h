@@ -1,32 +1,34 @@
 #ifndef MATRIX_H
 #define MATRIX_H
+#include "type.h"
 
 #define MAX_SIZE 50
 
-typedef struct DoubleMatrix DoubleMatrix;
+typedef struct Matrix Matrix;
 
-struct DoubleMatrix {
+struct Matrix {
+    dtype type;
     int nrow;
     int ncol;
-    double *data;
+    tvalues data;
 };
 
-DoubleMatrix *dblmat_create(int n, int p);
-void dblmat_delete(DoubleMatrix *mat);
-void dblmat_fill(DoubleMatrix *mat, double *entries);
-void dblmat_set_entry(DoubleMatrix *mat, int i, int j, double val);
-double dblmat_get_entry(DoubleMatrix *mat, int i, int j);
-void dblmat_print(DoubleMatrix *mat);
-int dblmat_equal(DoubleMatrix *mat1, DoubleMatrix *mat2);
-void dblmat_get_rows(DoubleMatrix *mat, DoubleMatrix *row_mat, int *rows_arr);
-void dblmat_get_cols(DoubleMatrix *mat, DoubleMatrix *col_mat, int *cols_arr);
-void dblmat_row_op1(DoubleMatrix *mat, int i, int j);
-void dblmat_row_op2(DoubleMatrix *mat, int i, double k);
-void dblmat_row_op3(DoubleMatrix *mat, int i, int j, double k);
-void dblmat_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod);
-void dblmat_had_product(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *prod);
-void dblmat_scale(double k, DoubleMatrix *mat);
-void dblmat_sum(DoubleMatrix *A, DoubleMatrix *B, DoubleMatrix *sum);
-void dblmat_transpose(DoubleMatrix *mat);
+Matrix *mat_create(dtype t, int n, int p);
+void mat_delete(Matrix *mat);
+void mat_fill(Matrix *mat, tvalues entries);
+void mat_set_entry(Matrix *mat, int i, int j, tvalue tval);
+tvalue mat_get_entry(Matrix *mat, int i, int j);
+void mat_print(Matrix *mat);
+int mat_equal(Matrix *mat1, Matrix *mat2);
+void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr);
+void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr);
+void mat_row_op1(Matrix *mat, int i, int j);
+void mat_row_op2(Matrix *mat, int i, double k);
+void mat_row_op3(Matrix *mat, int i, int j, double k);
+void mat_product(Matrix *A, Matrix *B, Matrix *prod);
+void mat_had_product(Matrix *A, Matrix *B, Matrix *prod);
+void mat_scale(double k, Matrix *mat);
+void mat_sum(Matrix *A, Matrix *B, Matrix *sum);
+void mat_transpose(Matrix *mat);
 
 #endif
