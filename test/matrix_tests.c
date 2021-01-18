@@ -21,6 +21,16 @@ void test_mat_create() {
     return;
 }
 
+void test_mat_print() {
+    Matrix *mat = mat_create(DBL, 2, 3);
+    double entries[6] = {1, 2, 3, 4, 5, 6};
+    mat_fill_dbl(mat, entries);
+
+    mat_print(mat);
+
+    return;
+}
+
 void test_mat_set_entry() {
     Matrix *mat = mat_create(DBL, 3, 4);
     mat_set_entry(mat, 1, 2, t_dbl(.5));
@@ -360,6 +370,96 @@ void test_mat_transpose() {
 
     return;
 }
+
+// algorithms:
+
+void test_mat_ref() {
+    Matrix *A = mat_create(DBL, 3, 3);
+    Matrix *B = mat_create(DBL, 4, 3);
+    Matrix *checkA = mat_create(DBL, 3, 3);
+    Matrix *checkB = mat_create(DBL, 4, 3);
+
+    double A_entries[9] = {2, 4, 6, 2, 4, 2, 1, 3, 1};
+    double cA_entries[9] = {1, 2, 3, 0, 1, -2, 0, 0, 1};
+    double B_entries[12] = {-1, -3, -2, -2, 0, 2, 2, 3, -2, 3, -3, -1};
+    double cB_entries[12] = {1, 3, 2, 0, 1, 1, 0, 0, 1, 0, 0, 0};
+
+
+    mat_fill_dbl(A, A_entries);
+    mat_fill_dbl(checkA, cA_entries);
+    mat_fill_dbl(B, B_entries);
+    mat_fill_dbl(checkB, cB_entries);
+
+    mat_ref(A);
+    mat_ref(B);
+
+    assert(mat_equal(A, checkA) == TRUE);
+     assert(mat_equal(B, checkB) == TRUE);
+
+    mat_delete(A);
+    mat_delete(checkA);
+    mat_delete(B);
+    mat_delete(checkB);
+
+    return;
+}
+
+void test_mat_rref() {
+    Matrix *A = mat_create(DBL, 3, 3);
+    Matrix *B = mat_create(DBL, 4, 3);
+    Matrix *checkA = mat_create(DBL, 3, 3);
+    Matrix *checkB = mat_create(DBL, 4, 3);
+
+    double A_entries[9] = {2, 4, 6, 2, 4, 2, 1, 3, 1};
+    double cA_entries[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    double B_entries[12] = {-1, -3, -2, -2, 0, 2, 2, 3, -2, 3, -3, -1};
+    double cB_entries[12] = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
+
+
+    mat_fill_dbl(A, A_entries);
+    mat_fill_dbl(checkA, cA_entries);
+    mat_fill_dbl(B, B_entries);
+    mat_fill_dbl(checkB, cB_entries);
+
+    mat_rref(A);
+    mat_rref(B);
+
+    assert(mat_equal(A, checkA) == TRUE);
+     assert(mat_equal(B, checkB) == TRUE);
+
+    mat_delete(A);
+    mat_delete(checkA);
+    mat_delete(B);
+    mat_delete(checkB);
+
+    return;
+}
+
+void test_mat_solve() {
+    Matrix *A = mat_create(DBL, 3, 3);
+    Matrix *b = mat_create(DBL, 3, 1);
+    Matrix *x = mat_create(DBL, 3, 1);
+    Matrix *checkx = mat_create(DBL, 3, 1);
+
+    double entries_A[9] = {1, 1, 1, 0, 2, 5, 2, 5, -1};
+    double entries_b[9] = {6, -4, 27};
+    double entries_checkx[9] = {5, 3, -2};
+
+    mat_fill_dbl(A, entries_A);
+    mat_fill_dbl(b, entries_b);
+    mat_fill_dbl(checkx, entries_checkx);
+
+    mat_solve(A, b, x);
+
+    assert(mat_equal(x, checkx) == TRUE);
+
+    mat_delete(A);
+    mat_delete(b);
+    mat_delete(x);
+    mat_delete(checkx);
+
+    return;
+}
 //===========================================================================================
 //===========================================================================================
 
@@ -368,6 +468,7 @@ int main() {
 
     // data structure:
     test_mat_create();
+    //test_mat_print();
     test_mat_set_entry();
     test_mat_get_entry();
     test_mat_fill();
@@ -388,7 +489,9 @@ int main() {
     test_mat_transpose();
 
     // algorithms:
-
+    test_mat_ref();
+    test_mat_rref();
+    test_mat_solve();
     
     return 0;
 }
