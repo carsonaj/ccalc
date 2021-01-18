@@ -24,6 +24,7 @@ void mat_print(Matrix *mat);
 int mat_equal(Matrix *mat1, Matrix *mat2);
 void mat_get_rows(Matrix *mat, Matrix *row_mat, int *rows_arr);
 void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr);
+void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join);
 
 // mathematics:
 void mat_row_op1(Matrix *mat, int i, int j);
