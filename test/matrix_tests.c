@@ -142,6 +142,57 @@ void test_mat_get_cols() {
     return; 
 } 
 
+void test_mat_join() {
+
+    //vertical join, axis = 0:
+    Matrix *A = mat_create(DBL, 2, 3);
+    Matrix *B = mat_create(DBL, 1, 3);
+    Matrix *J = mat_create(DBL, 3, 3);
+    Matrix *C = mat_create(DBL, 3, 3);
+
+    double entriesA[6] = {1, 2, 3, 4 ,5, 6};
+    double entriesB[3] = {7, 8, 9};
+    double entriesC[9] = {1, 2, 3, 4 ,5, 6, 7, 8, 9};
+
+    mat_fill_dbl(A, entriesA);
+    mat_fill_dbl(B, entriesB);
+    mat_fill_dbl(C, entriesC);
+
+    mat_join(A, B, 0, J);
+
+    assert(mat_equal(J, C) == TRUE);
+
+    mat_delete(A);
+    mat_delete(B);
+    mat_delete(J);
+    mat_delete(C);
+    
+    //horizontal join, axis = 1:
+    Matrix *D = mat_create(DBL, 3, 2);
+    Matrix *E = mat_create(DBL, 3, 1);
+    Matrix *K = mat_create(DBL, 3, 3);
+    Matrix *F = mat_create(DBL, 3, 3);
+
+    double entriesD[6] = {1, 2, 4, 5, 7, 8};
+    double entriesE[3] = {3, 6, 9};
+    double entriesF[9] = {1, 2, 3, 4 ,5, 6, 7, 8, 9};
+
+    mat_fill_dbl(D, entriesD);
+    mat_fill_dbl(E, entriesE);
+    mat_fill_dbl(F, entriesF);
+
+    mat_join(D, E, 1, K);
+
+    assert(mat_equal(K, F) == TRUE);
+
+    mat_delete(D);
+    mat_delete(E);
+    mat_delete(K);
+    mat_delete(F);
+
+    return;
+}
+
 // mathematics: 
 
 void test_mat_row_op1() {
@@ -323,6 +374,7 @@ int main() {
     test_mat_equal();
     test_mat_get_rows();
     test_mat_get_cols();
+    test_mat_join();
     
 
     // mathematics:
@@ -336,7 +388,7 @@ int main() {
     test_mat_transpose();
 
     // algorithms:
-    
+
     
     return 0;
 }
