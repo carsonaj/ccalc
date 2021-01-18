@@ -48,20 +48,20 @@ value v = tval.val;
 Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nfeval` and `v.ffeval`.
 
 ## tvalue functions:
-`void t_print(tvalue tval)`: prints a tvalue <br>
+* `void t_print(tvalue tval)`: prints a tvalue <br>
 **input**: <br>
         `tvalue` <br>
 **output**:<br>
         `NULL` <br>
 
 
-`tvalue t_dbl(double val)`: transform a double to its corresponding tvalue <br>
+* `tvalue t_dbl(double val)`: transform a double to its corresponding tvalue <br>
 **input**: <br>
         `double`<br>
 **output**:<br>
         `tvalue`<br>
 
-`void t_dbls(double *vals, tvalue *tvals, int len)`: transform an array of doubles to an array of corresponding tvalues
+* `void t_dbls(double *vals, tvalue *tvals, int len)`: transform an array of doubles to an array of corresponding tvalues
 **input**: <br>
         `double *, tvalue *, int` <br>
 **output**: <br>
