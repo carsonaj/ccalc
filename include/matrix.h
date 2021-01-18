@@ -16,6 +16,7 @@ struct Matrix {
 Matrix *mat_create(dtype t, int n, int p);
 void mat_delete(Matrix *mat);
 void mat_fill(Matrix *mat, tvalue *entries);
+void mat_fill_dbl(Matrix *mat, double *entries);
 void mat_set_entry(Matrix *mat, int i, int j, tvalue tval);
 tvalue mat_get_entry(Matrix *mat, int i, int j);
 void mat_print(Matrix *mat);

@@ -89,6 +89,18 @@ void mat_fill(Matrix *mat, tvalue *entries) {
     return;
 }
 
+// make sure len(entries) == nrow * ncol
+void mat_fill_dbl(Matrix *mat, double *entries) {
+    assert(mat->type == DBL);
+    int len = mat->nrow * mat->ncol;
+    tvalue t_entries[len];
+    t_dbls(entries, t_entries, len);
+
+    mat_fill(mat, t_entries);
+
+    return;
+}
+
 int mat_equal(Matrix *mat1, Matrix *mat2) {
     dtype t1 = mat1->type;
     dtype t2 = mat2->type;
@@ -262,6 +274,7 @@ void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
 }
 
 void mat_scale(tvalue k, Matrix *mat) {
+    assert(k.type == mat->type);
     int nrow = mat->nrow;
     int ncol = mat->ncol;
 
@@ -277,6 +290,7 @@ void mat_scale(tvalue k, Matrix *mat) {
 }
 
 void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
+    assert(A->type == B->type);
     assert(A->nrow == B->nrow);
     assert(A->ncol == B->ncol);
     assert(A->nrow == sum->nrow);

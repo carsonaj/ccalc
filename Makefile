@@ -16,13 +16,20 @@ clean:
 	rm -f ./lib/*.so
 	rm -f ./test/*_tests
 
-tests: array_tests matrix_tests
+tests: type_tests array_tests matrix_tests
+	test/type_tests
+	valgrind test/type_tests
+	echo
 	test/array_tests 
 	valgrind test/array_tests
+	echo 
 	test/matrix_tests
 	valgrind test/matrix_tests
 
-array_tests: ./test/array_tests.c ./src/array.c
+type_tests: 
+	gcc ./test/type_tests.c ./src/type.c -o ./test/type_tests
+
+array_tests: 
 	gcc ./test/array_tests.c ./src/array.c ./src/type.c -o test/array_tests
 
 matrix_tests: 

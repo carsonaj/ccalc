@@ -4,6 +4,9 @@
 #include "../include/type.h"
 #include "../include/array.h"
 
+#define TRUE 1
+#define FALSE 0
+
 // define tests:
 void test_arr_equal() {
     double arr1[3] = {2, 4,-1};
@@ -22,9 +25,9 @@ void test_arr_equal() {
     tvalue tarr4[3];
     t_dbls(arr4, tarr4, 3);
 
-    assert(!arr_equal(tarr1, tarr2, 3, 2));
-    assert(!arr_equal(tarr1, tarr3, 3, 3));
-    assert(arr_equal(tarr1, tarr4, 3, 3));
+    assert(arr_equal(tarr1, tarr2, 3, 2) == FALSE);
+    assert(arr_equal(tarr1, tarr3, 3, 3) == FALSE);
+    assert(arr_equal(tarr1, tarr4, 3, 3) == TRUE);
 
 }
 

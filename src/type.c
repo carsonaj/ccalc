@@ -23,7 +23,7 @@ void t_dbls(double *vals, tvalue *tvals, int len) {
     return;
 }
 
-tvalue zero(dtype type) {
+tvalue t_zero(dtype type) {
     tvalue z;
     z.type = type;
     switch(type) {
@@ -71,7 +71,6 @@ tvalue t_sum(tvalue tval1, tvalue tval2) {
     }
 
     return sum;
-
 }
 
 tvalue t_product(tvalue tval1, tvalue tval2) {

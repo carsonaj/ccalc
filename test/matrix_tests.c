@@ -29,24 +29,26 @@ void test_mat_set_entry() {
 
     return;
 }
-/*
+
 void test_mat_get_entry() {
-    Matrix *mat = mat_create(3, 4);
-    mat_set_entry(mat, 1, 2, .5);
-    assert(mat_get_entry(mat, 1, 2) == .5);
+    Matrix *mat = mat_create(DBL, 3, 4);
+    mat_set_entry(mat, 1, 2, t_dbl(.5));
+    assert(mat_get_entry(mat, 1, 2).val.dblval == .5);
     mat_delete(mat);
 
     return;
 }
 
 void test_mat_fill() {
-    Matrix *mat = mat_create(2, 3);
-    double entries[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    mat_fill(mat, entries);
+    Matrix *mat = mat_create(DBL, 2, 3);
+    double dentries[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    tvalue tentries[6];
+    t_dbls(dentries, tentries, 6);
+    mat_fill(mat, tentries);
     
     int i;
     for (i=1; i<6; i++) {
-        assert(mat->data[i] == i+1);
+        assert(mat->entries[i].val.dblval == i+1);
     }
 
     mat_delete(mat);
@@ -54,19 +56,36 @@ void test_mat_fill() {
     return;
 }
 
+void test_mat_fill_dbl() {
+    Matrix *mat = mat_create(DBL, 2, 3);
+    double entries[6] = {1, 2, 3, 4, 5, 6};
+    mat_fill_dbl(mat, entries);
+
+    int i;
+    for (i=0; i<6; i++) {
+        assert(mat->entries[i].val.dblval == i+1);
+    }
+    mat_delete(mat);
+
+    return;
+}
+
 void test_mat_equal() {
-    Matrix *mat1 = mat_create(2, 3);
+    Matrix *mat1 = mat_create(DBL, 2, 3);
     double entries1[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    mat_fill(mat1, entries1);
-    Matrix *mat2 = mat_create(1, 3);
+    mat_fill_dbl(mat1, entries1);
+
+    Matrix *mat2 = mat_create(DBL, 1, 3);
     double entries2[3] = {1.0, 2.0, 3.0};
-    mat_fill(mat2, entries2);
-    Matrix *mat3 = mat_create(2, 3);
+    mat_fill_dbl(mat2, entries2);
+    
+    Matrix *mat3 = mat_create(DBL, 2, 3);
     double entries3[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 7.0};
-    mat_fill(mat3, entries3);
-    Matrix *mat4 = mat_create(2, 3);
+    mat_fill_dbl(mat3, entries3);
+
+    Matrix *mat4 = mat_create(DBL, 2, 3);
     double entries4[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    mat_fill(mat4, entries4);
+    mat_fill_dbl(mat4, entries4);
 
     assert(mat_equal(mat1, mat2) == FALSE);
     assert(mat_equal(mat1, mat3) == FALSE);
@@ -81,15 +100,15 @@ void test_mat_equal() {
 }
 
 void test_mat_get_rows() {
-    Matrix *m = mat_create(3, 3);
-    Matrix *rm = mat_create(2, 3);
-    Matrix *rmc = mat_create(2, 3);
+    Matrix *m = mat_create(DBL, 3, 3);
+    Matrix *rm = mat_create(DBL, 2, 3);
+    Matrix *rmc = mat_create(DBL, 2, 3);
 
     double m_entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double rmc_entries[6] = {4, 5, 6, 7, 8, 9};
 
-    mat_fill(m, m_entries);
-    mat_fill(rmc, rmc_entries);
+    mat_fill_dbl(m, m_entries);
+    mat_fill_dbl(rmc, rmc_entries);
     int rows_arr[2] = {1, 2};
     mat_get_rows(m, rm, rows_arr);
 
@@ -102,15 +121,16 @@ void test_mat_get_rows() {
 }
 
 void test_mat_get_cols() {
-    Matrix *m = mat_create(3, 3);
-    Matrix *cm = mat_create(3, 2);
-    Matrix *cmc = mat_create(3, 2);
+    Matrix *m = mat_create(DBL, 3, 3);
+    Matrix *cm = mat_create(DBL, 3, 2);
+    Matrix *cmc = mat_create(DBL, 3, 2);
 
     double m_entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double cmc_entries[6] = {1, 2, 4, 5, 7, 8};
 
-    mat_fill(m, m_entries);
-    mat_fill(cmc, cmc_entries);
+
+    mat_fill_dbl(m, m_entries);
+    mat_fill_dbl(cmc, cmc_entries);
     int cols_arr[2] = {0, 1};
     mat_get_cols(m, cm, cols_arr);
 
@@ -125,12 +145,13 @@ void test_mat_get_cols() {
 // mathematics: 
 
 void test_mat_row_op1() {
-    Matrix *mat = mat_create(3, 3);
-    Matrix *cmat = mat_create(3, 3);
+    Matrix *mat = mat_create(DBL, 3, 3);
+    Matrix *cmat = mat_create(DBL, 3, 3);
     double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double centries[9] = {1, 2, 3, 7, 8, 9, 4, 5, 6};
-    mat_fill(mat, entries); 
-    mat_fill(cmat, centries);
+
+    mat_fill_dbl(mat, entries); 
+    mat_fill_dbl(cmat, centries);
 
     mat_row_op1(mat, 1, 2);
     assert(mat_equal(cmat, mat) == TRUE);
@@ -142,14 +163,14 @@ void test_mat_row_op1() {
 }
 
 void test_mat_row_op2() {
-    Matrix *mat = mat_create(3, 3);
-    Matrix *cmat = mat_create(3, 3);
+    Matrix *mat = mat_create(DBL, 3, 3);
+    Matrix *cmat = mat_create(DBL, 3, 3);
     double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double centries[9] = {1, 2, 3, 8, 10, 12, 7, 8, 9};
-    mat_fill(mat, entries); 
-    mat_fill(cmat, centries);
+    mat_fill_dbl(mat, entries); 
+    mat_fill_dbl(cmat, centries);
 
-    mat_row_op2(mat, 1, 2);
+    mat_row_op2(mat, 1, t_dbl(2));
     assert(mat_equal(cmat, mat) == TRUE);
 
     mat_delete(mat);
@@ -159,14 +180,14 @@ void test_mat_row_op2() {
 }
 
 void test_mat_row_op3() {
-    Matrix *mat = mat_create(3, 3);
-    Matrix *cmat = mat_create(3, 3);
+    Matrix *mat = mat_create(DBL, 3, 3);
+    Matrix *cmat = mat_create(DBL, 3, 3);
     double entries[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double centries[9] = {1, 2, 3, -3, -3, -3, 7, 8, 9};
-    mat_fill(mat, entries); 
-    mat_fill(cmat, centries);
+    mat_fill_dbl(mat, entries); 
+    mat_fill_dbl(cmat, centries);
 
-    mat_row_op3(mat, 1, 2, -1);
+    mat_row_op3(mat, 1, 2, t_dbl(-1));
     assert(mat_equal(cmat, mat) == TRUE);
 
     mat_delete(mat);
@@ -176,18 +197,18 @@ void test_mat_row_op3() {
 }
 
 void test_mat_product() {
-    Matrix *m1 = mat_create(2,3);
-    Matrix *m2 = mat_create(3,2);
-    Matrix *p = mat_create(2,2);
-    Matrix *pc = mat_create(2,2);
+    Matrix *m1 = mat_create(DBL, 2,3);
+    Matrix *m2 = mat_create(DBL, 3,2);
+    Matrix *p = mat_create(DBL, 2,2);
+    Matrix *pc = mat_create(DBL, 2,2);
 
     double ent1[6] = {1, 1, 1, 2, 2, 2};
     double ent2[6] = {1, 1, 2, 2, 3, 3};
     double entc[4] = {6, 6, 12, 12};
 
-    mat_fill(m1, ent1);
-    mat_fill(m2, ent2);
-    mat_fill(pc, entc);
+    mat_fill_dbl(m1, ent1);
+    mat_fill_dbl(m2, ent2);
+    mat_fill_dbl(pc, entc);
 
     mat_product(m1, m2, p);
     assert(mat_equal(p, pc) == TRUE);
@@ -201,18 +222,18 @@ void test_mat_product() {
 }
 
 void test_mat_had_product() {
-    Matrix *m1 = mat_create(2,2);
-    Matrix *m2 = mat_create(2,2);
-    Matrix *p = mat_create(2,2);
-    Matrix *pc = mat_create(2,2);
+    Matrix *m1 = mat_create(DBL, 2,2);
+    Matrix *m2 = mat_create(DBL, 2,2);
+    Matrix *p = mat_create(DBL, 2,2);
+    Matrix *pc = mat_create(DBL, 2,2);
 
     double ent1[4] = {1, 1, 2, 2};
     double ent2[4] = {3, 3, -1, -1};
     double entc[4] = {3, 3, -2, -2};
 
-    mat_fill(m1, ent1);
-    mat_fill(m2, ent2);
-    mat_fill(pc, entc);
+    mat_fill_dbl(m1, ent1);
+    mat_fill_dbl(m2, ent2);
+    mat_fill_dbl(pc, entc);
 
     mat_had_product(m1, m2, p);
     assert(mat_equal(p, pc) == TRUE);
@@ -226,15 +247,15 @@ void test_mat_had_product() {
 }
 
 void test_mat_scale() {
-    Matrix *m = mat_create(2,2);
-    double k = -2;
-    Matrix *mc = mat_create(2,2);
+    Matrix *m = mat_create(DBL, 2,2);
+    tvalue k = t_dbl(-2);
+    Matrix *mc = mat_create(DBL, 2,2);
 
     double ent[4] = {1, 1, 2, 2};
     double entc[4] = {-2, -2, -4, -4};
 
-    mat_fill(m, ent);
-    mat_fill(mc, entc);
+    mat_fill_dbl(m, ent);
+    mat_fill_dbl(mc, entc);
 
     mat_scale(k, m);
     assert(mat_equal(m, mc) == TRUE);
@@ -246,18 +267,18 @@ void test_mat_scale() {
 }
 
 void test_mat_sum() {
-    Matrix *m1 = mat_create(2,2);
-    Matrix *m2 = mat_create(2,2);
-    Matrix *p = mat_create(2,2);
-    Matrix *pc = mat_create(2,2);
+    Matrix *m1 = mat_create(DBL, 2,2);
+    Matrix *m2 = mat_create(DBL, 2,2);
+    Matrix *p = mat_create(DBL, 2,2);
+    Matrix *pc = mat_create(DBL, 2,2);
 
     double ent1[4] = {1, 4, 2, 2};
     double ent2[4] = {3, 3, -1, -1};
     double entc[4] = {4, 7, 1, 1};
 
-    mat_fill(m1, ent1);
-    mat_fill(m2, ent2);
-    mat_fill(pc, entc);
+    mat_fill_dbl(m1, ent1);
+    mat_fill_dbl(m2, ent2);
+    mat_fill_dbl(pc, entc);
 
     mat_sum(m1, m2, p);
     assert(mat_equal(p, pc) == TRUE);
@@ -271,14 +292,14 @@ void test_mat_sum() {
 }
 
 void test_mat_transpose() {
-    Matrix *m = mat_create(2,2);
-    Matrix *mc = mat_create(2,2);
+    Matrix *m = mat_create(DBL, 2,2);
+    Matrix *mc = mat_create(DBL, 2,2);
 
     double ent[4] = {1, 4, 3, -1};
     double entc[4] = {1, 3, 4, -1};
 
-    mat_fill(m, ent);
-    mat_fill(mc, entc);
+    mat_fill_dbl(m, ent);
+    mat_fill_dbl(mc, entc);
 
     mat_transpose(m);
     assert(mat_equal(m, mc) == TRUE);
@@ -290,13 +311,13 @@ void test_mat_transpose() {
 }
 //===========================================================================================
 //===========================================================================================
-*/
+
 // run tests:
 int main() {
 
     // data structure:
     test_mat_create();
-    test_mat_set_entry();/*
+    test_mat_set_entry();
     test_mat_get_entry();
     test_mat_fill();
     test_mat_equal();
@@ -313,7 +334,7 @@ int main() {
     test_mat_scale();
     test_mat_sum();
     test_mat_transpose();
-    */
+    
     return 0;
 }
 

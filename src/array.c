@@ -21,7 +21,7 @@ int arr_equal(tvalue *arr1, tvalue *arr2, int len1, int len2) {
 
 tvalue arr_sum(tvalue *arr, int len) {
     dtype t = arr[0].type;
-    tvalue sum = zero(t);
+    tvalue sum = t_zero(t);
     int i;
     for (i=0; i<len; i++) {
         sum = t_sum(sum, arr[i]);

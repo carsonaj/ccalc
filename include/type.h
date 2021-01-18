@@ -3,9 +3,7 @@
 
 typedef enum dtype dtype; 
 typedef union value value;
-typedef union values values;
 typedef struct tvalue tvalue;
-typedef struct tvalues tvalues;
 
 enum dtype {
     DBL,
@@ -27,7 +25,7 @@ tvalue t_dbl(double val);
 void t_dbls(double *vals, tvalue *tvals, int len);
 
 // mathematics:
-tvalue zero(dtype type);
+tvalue t_zero(dtype type);
 int t_equal(tvalue tval1, tvalue tval2);
 tvalue t_sum(tvalue tval1, tvalue tval2);
 tvalue t_product(tvalue tval1, tvalue tval2);
