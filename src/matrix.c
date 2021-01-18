@@ -169,7 +169,7 @@ void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
 void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join) {
     dtype t = A->type;
     assert(t == B->type);
-    assert(t = join->type);
+    assert(t == join->type);
 
     // axis = 0 means vertical join
     // axis = 1 means horizontal join
@@ -178,7 +178,6 @@ void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join) {
     int r = B->nrow;
     int s = B->ncol;
 
-    Matrix join;
     if (axis==0) {
         assert(n == s);
         assert(join->nrow == m+r);
@@ -188,12 +187,12 @@ void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join) {
         for (j=0; j<n; j++) {
             for (i=0; i<m; i++) {
                 tvalue entryA = mat_get_entry(A, i, j);
-                mat_set_element(join, i, j, entryA);
+                mat_set_entry(join, i, j, entryA);
             }
 
             for (i=0; i<r; i++) {
                 tvalue entryB = mat_get_entry(B, i, j);
-                mat_set_element(join, i+m, j, entryB);
+                mat_set_entry(join, i+m, j, entryB);
             }
         }
     }
