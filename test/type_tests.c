@@ -39,6 +39,22 @@ void test_t_zero() {
     return;
 }
 
+void test_t_neg() {
+    tvalue x = t_dbl(2.3);
+    tvalue neg = t_neg(x);
+    assert(neg.val.dblval == -2.3);
+
+    return;
+}
+
+void test_t_inv() {
+    tvalue x = t_dbl(2.3);
+    tvalue inv = t_inv(x);
+    assert(inv.val.dblval == -2.3);
+
+    return;
+}
+
 void test_t_equal() {
     tvalue tval1 = t_dbl(1.0);
     tvalue tval2 = t_dbl(2.1);

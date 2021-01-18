@@ -165,6 +165,60 @@ void mat_get_cols(Matrix *mat, Matrix *col_mat, int *cols_arr) {
 
     return;
 }
+
+void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join) {
+    dtype t = A->type;
+    assert(t == B->type);
+    assert(t = join->type);
+
+    // axis = 0 means vertical join
+    // axis = 1 means horizontal join
+    int m = A->nrow;
+    int n = A->ncol;
+    int r = B->nrow;
+    int s = B->ncol;
+
+    Matrix join;
+    if (axis==0) {
+        assert(n == s);
+        assert(join->nrow == m+r);
+        assert(join->ncol == n);
+
+        int i, j;
+        for (j=0; j<n; j++) {
+            for (i=0; i<m; i++) {
+                tvalue entryA = mat_get_entry(A, i, j);
+                mat_set_element(join, i, j, entryA);
+            }
+
+            for (i=0; i<r; i++) {
+                tvalue entryB = mat_get_entry(B, i, j);
+                mat_set_element(join, i+m, j, entryB);
+            }
+        }
+    }
+
+    else if (axis == 1) {
+        assert(m == r);
+        assert(join->nrow == m);
+        assert(join->ncol == n+s);
+
+        int i, j;
+        for (i=0; i<m; i++) {
+            for (j=0; j<n; j++) {
+                tvalue entryA = mat_get_entry(A, i, j);
+                mat_set_entry(join, i, j, entryA);
+            }
+
+            for (j=0; j<s; j++) {
+                tvalue entryB = mat_get_entry(B, i, j);
+                mat_set_entry(join, i, j+n, entryB);
+            }
+        }
+    }
+
+    return;
+}
 //--------------------------------------------------------------------------------
 
 // mathematics:
@@ -325,3 +379,126 @@ void mat_transpose(Matrix *mat) {
 
     return;
 }
+//--------------------------------------------------------
+
+// algorithms
+
+// row echelon form
+static void sub_ref(Matrix *mat, int start_row, int start_col) {
+    dtype t = mat->type;
+
+    // check if mat is zero matrix
+    int nrow = mat->nrow;
+    int ncol = mat->ncol;
+    int val = TRUE;
+    tvalue entry;
+    int row = start_row;
+    int col = start_col;
+    while (col < ncol) {
+        row = start_row;
+        while (row < nrow) {
+            entry = mat_get_entry(mat, row, col);
+            if (t_equal(entry, t_zero(t)) == FALSE) {
+                val = FALSE;
+                break;
+            }
+            row = row+1;
+        }
+        if (val == FALSE)
+            break;
+        col = col + 1;
+    }
+    if (val == TRUE)
+        return;
+
+    // (row, col) is now pivot;
+    // row operations to create a pivot of 1 and zeros below pivot
+    mat_row_op2(mat, row, t_inv(entry));
+    mat_row_op1(mat, start_row, row);
+
+    row = row + 1;
+    while (row < nrow) {
+        tvalue k = t_neg(mat_get_entry(mat, row, col));
+        mat_row_op3(mat, row, start_row, k);
+        row = row + 1;
+    }
+    // recursive call on submatrix down-right from pivot
+    sub_ref(mat, start_row+1, col+1);
+}
+
+void mat_ref(Matrix *mat) {
+    sub_ref(mat, 0, 0);
+}
+
+// reduced row echelon form
+static void sub_rref(Matrix *mat, int start_row, int start_col) {
+    // assume matrix is in row echelon form
+    // check if mat is zero matrix
+    dtype t = mat->type;
+    int m = mat->nrow;
+    int n = mat->ncol;
+    int val = TRUE;
+    tvalue entry;
+    int row = start_row;
+    int col = start_col;
+    while (col < n) {
+        row = start_row;
+        while (row < m) {
+            entry = mat_get_entry(mat, row, col);
+            if (t_equal(entry, t_zero(t)) == FALSE) {
+                val = FALSE;
+                break;
+            }
+            row = row + 1;
+        }
+        if (val == FALSE)
+            break;
+        col = col + 1;
+    }
+    if (val == TRUE)
+        return;
+
+    // now (row, col) is the pivot
+    int prev_row = row-1;
+    while (0 <= prev_row) {
+        entry = t_neg(mat_get_entry(mat, prev_row, col));
+        if (t_equal(entry, t_zero(t)) == FALSE)
+            mat_row_op3(mat, prev_row, row, entry);
+        prev_row = prev_row - 1;
+    }
+
+    row = row + 1;
+    col = col + 1;
+    sub_rref(mat, row, col);
+}
+
+void mat_rref(Matrix *mat) {
+    mat_ref(mat);
+    sub_rref(mat, 0, 0);
+}
+
+// solve system Ax=b
+// A is square
+void mat_solve_system(Matrix *A, Matrix *b, Matrix *xsol) {
+    dtype t = A->type;
+    assert(t = b->type);
+    assert(t = xsol->type);
+    int m = A->nrow;
+    assert(m == A->ncol);
+    assert(m == b->nrow);
+    assert(b->ncol = 1);
+    assert(xsol->nrow == m);
+    assert(xsol->ncol == 1);
+
+    Matrix *join = mat_create(t, m, m+1);
+    mat_join(A, b, 1, join);
+    mat_rref(join);
+    int cols_arr[1] = {m+1};
+    mat_get_cols(join, xsol, cols_arr);
+    
+    mat_delete(join);
+
+    return;
+}
+
+//-------------------------------------------------------------------

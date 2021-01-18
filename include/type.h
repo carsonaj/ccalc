@@ -26,6 +26,8 @@ void t_dbls(double *vals, tvalue *tvals, int len);
 
 // mathematics:
 tvalue t_zero(dtype type);
+tvalue t_neg(tvalue x);
+tvalue t_inv(tvalue x);
 int t_equal(tvalue tval1, tvalue tval2);
 tvalue t_sum(tvalue tval1, tvalue tval2);
 tvalue t_product(tvalue tval1, tvalue tval2);

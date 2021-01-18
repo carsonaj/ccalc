@@ -334,6 +334,9 @@ int main() {
     test_mat_scale();
     test_mat_sum();
     test_mat_transpose();
+
+    // algorithms:
+    
     
     return 0;
 }

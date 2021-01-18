@@ -23,10 +23,10 @@ void t_dbls(double *vals, tvalue *tvals, int len) {
     return;
 }
 
-tvalue t_zero(dtype type) {
+tvalue t_zero(dtype t) {
     tvalue z;
-    z.type = type;
-    switch(type) {
+    z.type = t;
+    switch(t) {
         case DBL: 
             z.val.dblval = 0.0;
             break;
@@ -35,7 +35,35 @@ tvalue t_zero(dtype type) {
     }
 
     return z;
+}
 
+tvalue t_neg(tvalue x) {
+    dtype t = x.type;
+    tvalue neg;
+    neg.type = t;
+    switch(t) {
+        case DBL: 
+            neg.val.dblval = -x.val.dblval;
+            break;
+        case PLY:
+            break;
+    }
+}
+
+tvalue t_inv(tvalue x) {
+    dtype t = x.type;
+    assert(t_equal(x, t_zero(t)) == FALSE);
+    tvalue inv;
+    inv.type = t;
+    switch(t) {
+        case DBL:
+            inv.val.dblval = 1/x.val.dblval;
+            break;
+        case PLY:
+            break;
+    }
+
+    return inv;
 }
 
 int t_equal(tvalue tval1, tvalue tval2) {
@@ -45,11 +73,14 @@ int t_equal(tvalue tval1, tvalue tval2) {
     }
 
     switch(t) {
-        case DBL: 
-            if (tval1.val.dblval == tval2.val.dblval) {
+        case DBL: {
+            int s1 = ((tval1.val.dblval - tval2.val.dblval) < 0.0001);
+            int s2 = (-0.0001 < (tval1.val.dblval - tval2.val.dblval));
+            if ((s1 && s2) == TRUE) {
                 return TRUE;
             }
             break;
+        }
         case PLY:
             break;
     }
