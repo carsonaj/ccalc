@@ -1,8 +1,23 @@
+#include <stdio.h>
 #include <assert.h>
 #include "../include/type.h"
 
 #define TRUE 1
 #define FALSE 0
+
+void t_print(tvalue tval) {
+    dtype t = tval.type;
+    
+    switch(t) {
+        case DBL:
+            printf("%6.2f ", tval.val.dblval);
+            break;
+        case PLY:
+            break;
+    }
+
+    return;
+}
 
 tvalue t_dbl(double val) {
     tvalue tval;
@@ -48,6 +63,8 @@ tvalue t_neg(tvalue x) {
         case PLY:
             break;
     }
+
+    return neg;
 }
 
 tvalue t_inv(tvalue x) {

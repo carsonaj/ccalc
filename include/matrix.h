@@ -39,6 +39,6 @@ void mat_transpose(Matrix *mat);
 // algorithms:
 void mat_ref(Matrix *mat);
 void mat_rref(Matrix *mat);
-void mat_solve_system(Matrix *A, Matrix *b, Matrix *xsol);
+void mat_solve(Matrix *A, Matrix *b, Matrix *xsol);
 
 #endif

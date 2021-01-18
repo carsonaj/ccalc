@@ -21,6 +21,7 @@ struct tvalue {
 };
 
 // data structure:
+void t_print(tvalue tval);
 tvalue t_dbl(double val);
 void t_dbls(double *vals, tvalue *tvals, int len);
 

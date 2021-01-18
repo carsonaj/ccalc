@@ -43,16 +43,11 @@ void mat_print(Matrix *mat) {
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
             tvalue entry = mat_get_entry(mat, i, j);
-            switch(t) {
-                case DBL: 
-                    printf("%6.2f ", entry.val.dblval);
-                    break;
-                case PLY:
-                    break;
-            }
+            t_print(entry);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 void mat_set_entry(Matrix *mat, int i, int j, tvalue tval){
@@ -412,13 +407,19 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
 
     // (row, col) is now pivot;
     // row operations to create a pivot of 1 and zeros below pivot
-    mat_row_op2(mat, row, t_inv(entry));
-    mat_row_op1(mat, start_row, row);
+    tvalue inv = t_inv(entry);
+    mat_row_op2(mat, row, inv);
+
+    if (start_row != row) {
+        mat_row_op1(mat, start_row, row);
+    }
 
     row = row + 1;
     while (row < nrow) {
         tvalue k = t_neg(mat_get_entry(mat, row, col));
-        mat_row_op3(mat, row, start_row, k);
+        if (t_equal(k, t_zero(DBL)) == FALSE) {
+            mat_row_op3(mat, row, start_row, k);
+        }
         row = row + 1;
     }
     // recursive call on submatrix down-right from pivot
@@ -478,10 +479,10 @@ void mat_rref(Matrix *mat) {
 
 // solve system Ax=b
 // A is square
-void mat_solve_system(Matrix *A, Matrix *b, Matrix *xsol) {
+void mat_solve(Matrix *A, Matrix *b, Matrix *xsol) {
     dtype t = A->type;
-    assert(t = b->type);
-    assert(t = xsol->type);
+    assert(t == b->type);
+    assert(t == xsol->type);
     int m = A->nrow;
     assert(m == A->ncol);
     assert(m == b->nrow);
@@ -492,7 +493,7 @@ void mat_solve_system(Matrix *A, Matrix *b, Matrix *xsol) {
     Matrix *join = mat_create(t, m, m+1);
     mat_join(A, b, 1, join);
     mat_rref(join);
-    int cols_arr[1] = {m+1};
+    int cols_arr[1] = {m};
     mat_get_cols(join, xsol, cols_arr);
     
     mat_delete(join);
