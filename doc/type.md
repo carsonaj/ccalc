@@ -71,9 +71,7 @@ Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nf
 **input**: <br>
   `tvalue, tvalue <br>
 **output**: <br>
-  `int` : <br>
-         0 - FALSE, <br> 
-         1 - TRUE <br>
+  `int` : `0` - FALSE, `1` - TRUE <br>
 
 * `tvalue t_zero`: generates the additive identity of a given dtype <br>
 **input**: <br>
