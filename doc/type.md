@@ -54,6 +54,17 @@ Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nf
 **output**:<br>
   `NULL` <br>
 
+** example: <br>
+```
+tvalue tval = t_dbl(2.3);
+t_print(tval);
+```
+
+`2.30`
+
+
+
+
 
 * `tvalue t_dbl`: transform a double to its corresponding tvalue <br>
 **input**: <br>
