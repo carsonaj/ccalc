@@ -52,8 +52,10 @@ Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nf
 **input**: <br>
   `tvalue` <br>
 **output**:<br>
-  `NULL` <br>
-** example: <br>
+  `NULL` <br> 
+<br>
+
+- **example**: <br>
     ```
     tvalue tval = t_dbl(2.3);
     t_print(tval);
