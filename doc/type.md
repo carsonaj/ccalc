@@ -53,14 +53,13 @@ Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nf
   `tvalue` <br>
 **output**:<br>
   `NULL` <br>
-
 ** example: <br>
-```
-tvalue tval = t_dbl(2.3);
-t_print(tval);
-```
+    ```
+    tvalue tval = t_dbl(2.3);
+    t_print(tval);
+    ```
+    `2.30`
 
-`2.30`
 
 
 
