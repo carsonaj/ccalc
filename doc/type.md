@@ -1,6 +1,6 @@
 # type.h:
 
-## tvalue structure:
+## tvalue:
 Everything in `ccalc` revolves around the notion of the typed value or "tvalue". A tvalue is simply a structure containing a datatype and a value as fields where the datatype is represented by an `enum` and the value is represented by a `union`. 
 
 The supported datatypes include `double`, `Polynomial *`, `NumFldElm *`, and `FinFldElm *`. For more on these datatypes, see the following links:
@@ -47,32 +47,62 @@ value v = tval.val;
 
 Depending on `t`, we know to which to access among `v.dblval`, `v.plyval`, `v.nfeval` and `v.ffeval`.
 
-## tvalue functions:
-* `void t_print(tvalue tval)`: prints a tvalue <br>
+## functions:
+* `void t_print`: prints a tvalue <br>
 **input**: <br>
   `tvalue` <br>
 **output**:<br>
   `NULL` <br>
 
 
-* `tvalue t_dbl(double val)`: transform a double to its corresponding tvalue <br>
+* `tvalue t_dbl`: transform a double to its corresponding tvalue <br>
 **input**: <br>
   `double`<br>
 **output**:<br>
   `tvalue`<br>
 
-* `void t_dbls(double *vals, tvalue *tvals, int len)`: transform an array of doubles to an array of corresponding tvalues
+* `void t_dbls`: transform an array of doubles to an array of corresponding tvalues <br>
 **input**: <br>
   `double *, tvalue *, int` <br>
 **output**: <br>
-   `NULL` <br>
+  `NULL` <br>
 
+* `int t_equal`: decides whether two tvalues are equal or not <br>
+**input**: <br>
+  `tvalue, tvalue <br>
+**output**: <br>
+  `int` : <br>
+         0 - FALSE, <br> 
+         1 - TRUE <br>
 
-tvalue t_zero(dtype type);
-tvalue t_neg(tvalue x);
-tvalue t_inv(tvalue x);
-int t_equal(tvalue tval1, tvalue tval2);
-tvalue t_sum(tvalue tval1, tvalue tval2);
-tvalue t_product(tvalue tval1, tvalue tval2);
+* `tvalue t_zero`: generates the additive identity of a given dtype <br>
+**input**: <br>
+  `dtype`  <br>
+**output**: <br>
+  `tvalue` <br>
+
+* `tvalue t_neg`: generates the additive inverse of a given tvalue <br>
+**input**: <br>
+  `tvalue`  <br>
+**output**: <br>
+  `tvalue` <br>
+
+* `tvalue t_inv`: if applicable, generates the multiplicative inverse of a given tvalue <br>
+**input**: <br>
+  `tvalue`: a nonzero tvalue that is invertible  <br>
+**output**: <br>
+  `tvalue` <br>
+
+* `tvalue t_sum`: computes the sum of two tvalues<br>
+**input**: <br>
+  `tvalue`, `tvalue`  <br>
+**output**: <br>
+  `tvalue` <br>
+
+* `tvalue t_product`: computes the product of two tvalues <br>
+**input**: <br>
+  `tvalue` `tvalue` <br>
+**output**: <br>
+  `tvalue` <br>
 
 
