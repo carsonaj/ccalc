@@ -68,7 +68,7 @@ tvalue mat_get_entry(Matrix *mat, int i, int j) {
 } 
 
 // fill by row
-// make sure length of entries is rows*cols
+// make sure length of entries is rows * cols
 void mat_fill(Matrix *mat, tvalue *entries) {
     dtype t = mat->type;
     int n = mat->nrow;
@@ -84,6 +84,7 @@ void mat_fill(Matrix *mat, tvalue *entries) {
     return;
 }
 
+// mat_fill directly with doubles
 // make sure len(entries) == nrow * ncol
 void mat_fill_dbl(Matrix *mat, double *entries) {
     assert(mat->type == DBL);

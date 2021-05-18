@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "../include/type.h"
+#include "../include/polynomial.h"
 
 #define TRUE 1
 #define FALSE 0

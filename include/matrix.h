@@ -4,15 +4,6 @@
 
 #define MAX_SIZE 50
 
-typedef struct Matrix Matrix;
-
-struct Matrix {
-    dtype type;
-    int nrow;
-    int ncol;
-    tvalue *entries;
-};
-
 // data structure:
 Matrix *mat_create(dtype t, int n, int p);
 void mat_delete(Matrix *mat);

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../include/type.h"
+#include "../include/matrix.h"
+#include "../include/polynomial.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -8,7 +10,7 @@
 void t_print(tvalue tval) {
     dtype t = tval.type;
     
-    switch(t) {
+    switch (t) {
         case DBL:
             printf("%6.2f ", tval.val.dblval);
             break;
@@ -41,7 +43,7 @@ void t_dbls(double *vals, tvalue *tvals, int len) {
 tvalue t_zero(dtype t) {
     tvalue z;
     z.type = t;
-    switch(t) {
+    switch (t) {
         case DBL: 
             z.val.dblval = 0.0;
             break;
@@ -56,7 +58,7 @@ tvalue t_neg(tvalue x) {
     dtype t = x.type;
     tvalue neg;
     neg.type = t;
-    switch(t) {
+    switch (t) {
         case DBL: 
             neg.val.dblval = -x.val.dblval;
             break;
@@ -72,7 +74,7 @@ tvalue t_inv(tvalue x) {
     assert(t_equal(x, t_zero(t)) == FALSE);
     tvalue inv;
     inv.type = t;
-    switch(t) {
+    switch (t) {
         case DBL:
             inv.val.dblval = 1/x.val.dblval;
             break;
@@ -89,18 +91,38 @@ int t_equal(tvalue tval1, tvalue tval2) {
         return FALSE;
     }
 
-    switch(t) {
+    switch (t) {
         case DBL: {
             int s1 = ((tval1.val.dblval - tval2.val.dblval) < 0.0001);
             int s2 = (-0.0001 < (tval1.val.dblval - tval2.val.dblval));
-            if ((s1 && s2) == TRUE) {
+            if ((s1 && s2) == TRUE) 
                 return TRUE;
-            }
             break;
         }
         case PLY:
             break;
     }
+}
+
+int t_is_zero(tvalue tval) {
+    dtype t = tval.type;
+    switch (t) {
+        case DBL: {
+            int s1 = (-0.0001 < tval.val.dblval);
+            int s2 = (tval.val.dblval < 0.0001);
+            if ((s1 && s2) == TRUE)
+                return TRUE;
+            else 
+                return FALSE;
+            break;
+        }
+        case PLY:
+            if (ply_is_zero(tval.val.plyval) == TRUE) 
+                return TRUE;
+            else 
+                return FALSE;
+    }
+    
 }
 
 tvalue t_sum(tvalue tval1, tvalue tval2) {
@@ -110,7 +132,7 @@ tvalue t_sum(tvalue tval1, tvalue tval2) {
 
     tvalue sum;
     sum.type = t;
-    switch(t) {
+    switch (t) {
         case DBL:
             sum.val.dblval = tval1.val.dblval + tval2.val.dblval;
             break;
@@ -128,7 +150,7 @@ tvalue t_product(tvalue tval1, tvalue tval2) {
 
     tvalue prod;
     prod.type = t;
-    switch(t) {
+    switch (t) {
         case DBL:
             prod.val.dblval = tval1.val.dblval * tval2.val.dblval;
             break;
