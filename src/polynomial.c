@@ -77,7 +77,7 @@ void ply_fill(Polynomial *poly, tvalue *coefs) {
     for (i = 0; i <= deg; i++) {
         dtype s = coefs[i].type;
         assert(t == s);
-        poly->coefs[i] = coefs[i];
+        t_copy(coefs[i], &poly->coefs[i]);
     }
 
     return;
@@ -99,7 +99,9 @@ tvalue ply_get_coef(Polynomial *poly, int i) {
 }
 
 void ply_set_coef(Polynomial *poly, int i, tvalue tval) {
-    poly->coefs[i] = tval;
+    t_copy(tval, &poly->coefs[i]);
+
+    return;
 }
 
 // copy coefs of poly p into poly q
@@ -116,56 +118,108 @@ void ply_copy(Polynomial *p, Polynomial *q) {
     return;
 }
 
-void ply_print(Polynomial *poly) {
+// newline either TRUE or FALSE, i.e. 1 or 0
+void ply_print(Polynomial *poly, int newline) {
     dtype t = poly->type;
     switch (t) {
         case DBL:
-            ply_print_dbl(poly);
+            ply_print_dbl(poly, newline);
             break;
     }
 }
 
-void ply_print_dbl(Polynomial *poly) {
+// newline either TRUE or FALSE, i.e. 1 or 0
+void ply_print_dbl(Polynomial *poly, int newline) {
     assert(poly->type == DBL);
     int deg = poly->deg;
     tvalue coef0 = ply_get_coef(poly, 0);
-    tvalue coefn = ply_get_coef(poly, deg); //PROBLEM
-    if (deg!=0) {
-        assert(coefn.val.dblval !=0);
-        int k;
-        int i;
-        tvalue coef;
-        for (i=0; i<=deg; i++) {
-            coef = ply_get_coef(poly, i);
-            if (coef.val.dblval != 0) {
-                k = i;
-                break;
+    tvalue coefn = ply_get_coef(poly, deg); 
+    
+    switch (newline) {
+        case TRUE: {
+            if (deg!=0) {
+                assert(coefn.val.dblval !=0);
+                int k;
+                int i;
+                tvalue coef;
+                for (i=0; i<=deg; i++) {
+                    coef = ply_get_coef(poly, i);
+                    if (coef.val.dblval != 0) {
+                        k = i;
+                        break;
+                    }
+                }
+                if (k<deg) {
+                    printf("%.2fx^%d ", coef.val.dblval, k);
+                    for (i=k+1; i<=deg-1; i++) {
+                        coef = ply_get_coef(poly, i);
+                        if (coef.val.dblval > 0) {
+                            printf("+ %.2fx^%d ", coef.val.dblval, i);
+                        }
+                        else if (coef.val.dblval < 0)
+                            printf("- %.2fx^%d ", -coef.val.dblval, i);
+                        }
+                    if (coefn.val.dblval > 0)
+                        printf("+ %.2fx^%d\n", coefn.val.dblval, deg);
+                    else
+                        printf("- %.2fx^%d\n", -coefn.val.dblval, deg);
+                }
+
+                else if (k==deg) {
+                    printf("%.3fx^%d\n", coefn.val.dblval, deg);
+                }
+            }   
+
+            else if (deg == 0) {
+                printf("%.2f\n", coef0.val.dblval);
             }
-        }
-        if (k<deg) {
-            printf("%.2fx^%d ", coef.val.dblval, k);
-            for (i=k+1; i<=deg-1; i++) {
-                coef = ply_get_coef(poly, i);
-                if (coef.val.dblval > 0) {
-                    printf("+ %.2fx^%d ", coef.val.dblval, i);
-                }
-                else if (coef.val.dblval < 0)
-                    printf("- %.2fx^%d ", -coef.val.dblval, i);
-                }
-            if (coefn.val.dblval > 0)
-                printf("+ %.2fx^%d\n", coefn.val.dblval, deg);
-            else
-                printf("- %.2fx^%d\n", -coefn.val.dblval, deg);
+
+            break;
         }
 
-        else if (k==deg) {
-            printf("%.3fx^%d\n", coefn.val.dblval, deg);
-        }
-    }
+        case FALSE: {
+            if (deg!=0) {
+                assert(coefn.val.dblval !=0);
+                int k;
+                int i;
+                tvalue coef;
+                for (i=0; i<=deg; i++) {
+                    coef = ply_get_coef(poly, i);
+                    if (coef.val.dblval != 0) {
+                        k = i;
+                        break;
+                    }
+                }
+                if (k<deg) {
+                    printf("%.2fx^%d ", coef.val.dblval, k);
+                    for (i=k+1; i<=deg-1; i++) {
+                        coef = ply_get_coef(poly, i);
+                        if (coef.val.dblval > 0) {
+                            printf("+ %.2fx^%d ", coef.val.dblval, i);
+                        }
+                        else if (coef.val.dblval < 0)
+                            printf("- %.2fx^%d ", -coef.val.dblval, i);
+                        }
+                    if (coefn.val.dblval > 0)
+                        printf("+ %.2fx^%d", coefn.val.dblval, deg);
+                    else
+                        printf("- %.2fx^%d", -coefn.val.dblval, deg);
+                }
 
-    else if (deg == 0) {
-        printf("%.2f\n", coef0.val.dblval);
+                else if (k==deg) {
+                    printf("%.3fx^%d", coefn.val.dblval, deg);
+                }
+            }   
+
+            else if (deg == 0) {
+                printf("%.2f", coef0.val.dblval);
+            }
+
+            break;
+        }
+            
     }
+    
 }
 //----------------------------------------------------------------------------
 
@@ -210,8 +264,40 @@ int ply_is_zero(Polynomial *p) {
 
 }
 
+void ply_zero(Polynomial *z) {
+    dtype t = z->type;
+    z->deg = 0;
+
+    tvalue tz;
+    t_zero(t, &tz);
+
+    ply_set_coef(z, 0, tz);
+
+    return;
+}
+
+void ply_monomial(int deg, Polynomial *m) {
+    dtype t = m->type;
+    m->deg = deg;
+    int i;
+    tvalue t_z;
+    t_zero(t, &t_z);
+    tvalue t_e;
+    t_identity(t, &t_e);
+
+    for (i=0; i<deg; i++) {
+        ply_set_coef(m, i, t_z);
+    }
+
+    ply_set_coef(m, deg, t_e);
+
+    return;
+}
+
 void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
-    assert(poly1->type == poly2->type);
+    dtype t = poly1->type;
+    assert(t == poly2->type);
+    assert(t == sum_poly->type);
 
     Polynomial *p1 = max_deg(poly1, poly2);
     Polynomial *p2 = min_deg(poly1, poly2);
@@ -221,10 +307,12 @@ void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
     tvalue sum_coefs[deg1+1];
     int i;
     for (i=0; i<=deg2; i++) {
-        sum_coefs[i] = t_sum(ply_get_coef(poly1, i), ply_get_coef(poly2, i));
+        tvalue sum;
+        t_sum(ply_get_coef(poly1, i), ply_get_coef(poly2, i), &sum);
+        t_copy(sum, &sum_coefs[i]);
     }
     for (i=deg2+1; i<=deg1; i++) {
-        sum_coefs[i] = ply_get_coef(p1, i);
+        t_copy(ply_get_coef(p1, i), &sum_coefs[i]);
     }
     int deg = deg1;
     while (deg >= 0) {
@@ -232,7 +320,7 @@ void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
             break;
         if (deg == 0)
             break;
-        deg = deg-1;
+        deg = deg - 1;
     }
 
     sum_poly->deg = deg;
@@ -245,17 +333,16 @@ void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
 }
 
 void ply_product(Polynomial *poly1, Polynomial *poly2, Polynomial *prod_poly) {
-    assert(poly1->type == poly2->type);
     dtype t = poly1->type;
+    assert(t == poly2->type);
+    assert(t == prod_poly->type);
 
     if (ply_is_zero(poly1) == TRUE) {
-        prod_poly->deg = 0;
-        ply_set_coef(prod_poly, 0, t_zero(prod_poly->type));
+        ply_zero(prod_poly);
         return;
     }
     else if (ply_is_zero(poly2) == TRUE) {
-        prod_poly->deg = 0;
-        ply_set_coef(prod_poly, 0, t_zero(prod_poly->type));
+        ply_zero(prod_poly);
         return;
     }
     else {
@@ -274,12 +361,14 @@ void ply_product(Polynomial *poly1, Polynomial *poly2, Polynomial *prod_poly) {
         int k;
         prod_poly->deg = deg;
         for (k=0; k<=deg; k++) {
-            tvalue sum_k = t_zero(t);
+            tvalue sum_k; 
+            t_zero(t, &sum_k);
                 int l;
                 for (l=0; l<=k; l++) {
                     if ((l<=deg1)&&(k-l<=deg2)) {
-                        tvalue s = t_product(ply_get_coef(p1, l), ply_get_coef(p2, k-l));
-                        sum_k = t_sum(sum_k, s);
+                        tvalue s;
+                        t_product(ply_get_coef(p1, l), ply_get_coef(p2, k-l), &s);
+                        t_sum(sum_k, s, &sum_k);
                     }
                 }
             ply_set_coef(prod_poly, k, sum_k);
@@ -290,36 +379,46 @@ void ply_product(Polynomial *poly1, Polynomial *poly2, Polynomial *prod_poly) {
 }
 
 void ply_scale(tvalue s, Polynomial *p, Polynomial *sp) {
-    assert(s.type = p->type);
     dtype t = p->type;
+    assert(t == s.type);
+    assert(t == sp->type);
 
     if (t_is_zero(s) == TRUE) {
-        p->deg = 0;
-        ply_set_coef(p, 0, t_zero(t));
+        ply_zero(sp);
         return;
     }
     else {
         int n = p->deg;
+        sp->deg = n;
 
         int i;
         for(i=0; i<=n; i++) {
             tvalue coef = ply_get_coef(p, i);
-            ply_set_coef(sp, i, t_prod(s , coef));
+            t_product(coef, s, &coef);
+            ply_set_coef(sp, i, coef);
         }
 
-        return sp;
+        return;
     }
 }
 
-Polynomial ply_neg(Polynomial p) {
-    Polynomial neg = ply_scale(-1.0, p);
-    return neg;
+void ply_neg(Polynomial *p, Polynomial *neg) {
+    dtype t = p->type;
+    assert(t == neg->type);
+
+    tvalue t_e;
+    t_identity(t, &t_e);
+    tvalue t_neg_e;
+    t_neg(t_e, &t_neg_e);
+ 
+    ply_scale(t_neg_e, p, neg);
+    return;
 }
 
 
 
 
-/* 
+
 **********************************
 **********************************
 **********************************
@@ -329,31 +428,41 @@ Polynomial ply_neg(Polynomial p) {
 
 
 //---------------------------------------------------------------
-static PolyMatrix sub_division(Polynomial f, Polynomial g) {
-    Polynomial q;
-    Polynomial r;
+void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
+    dtype t = f->type;
+    assert(t == g->type);
+    assert(t == q->type);
+    assert(t == r->type);
 
-    int deg_q = f.deg - g.deg;
-    q = ply_monomial(deg_q);
+    int deg_q = f->deg - g->deg;
+    ply_monomial(deg_q, q);
 
-    double coef = ply_get_coef(f, f.deg)/ply_get_coef(g, g.deg);
+    tvalue f_coef = ply_get_coef(f, f->deg);
+    tvalue g_coef_inv;
+    t_inv(ply_get_coef(g, g->deg), &g_coef_inv);
+    tvalue coef;
+    t_product(f_coef, g_coef_inv, &coef);
     ply_set_coef(&q, deg_q, coef);
 
-    Polynomial prod = ply_product(g, q);
-    Polynomial scaled = ply_scale(-1.0, prod);
-    r = ply_sum(f, scaled);
+    Polynomial *prod = ply_create(t, 0);
+    Polynomial *neg = ply_create(t, 0);
+    ply_product(g, q, prod);
+    ply_neg(prod, neg);
+    ply_sum(f, neg, r);
+
+    ply_delete(prod);
+    ply_delete(neg);
 
     PolyMatrix pair = pymat_create(1, 2);
     pymat_set_element(&pair, 0, 0, q);
     pymat_set_element(&pair, 0, 1, r);
 
-    return pair;
+    return;
 }
 
-// division algorithm: divides f by g and
-// returns struct containing quotient, remainder
-
-// remember to free pair and the polys it contains after use
+/*
+// Division algorithm: divides f by g and returns struct containing quotient, remainder.
+// Remember to free pair and the polys it contains after use.
 PolyMatrix ply_division(Polynomial f, Polynomial g) {
     assert(ply_is_zero(g)==FALSE);
     Polynomial q0 = ply_zero();
@@ -574,4 +683,5 @@ Polynomial ply_differentiate(Polynomial poly, int n) {
         return deriv;
     }
 }
+
 */

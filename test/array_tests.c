@@ -35,7 +35,9 @@ void test_arr_sum() {
     double arr[3] = {2, 1, -1};
     tvalue tarr[3];
     t_dbls(arr, tarr, 3);
-    assert(arr_sum(tarr, 3).val.dblval == 2.0);
+    tvalue sum;
+    arr_sum(tarr, 3, &sum);
+    assert(sum.val.dblval == 2.0);
 
     return;
 }

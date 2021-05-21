@@ -55,17 +55,19 @@ struct Polynomial {
 //==========================================================================================
 
 // data structure:
-void t_print(tvalue tval);
-tvalue t_dbl(double val);
+void t_print(tvalue tval, int newline);
+void t_dbl(double val, tvalue *tval);
 void t_dbls(double *vals, tvalue *tvals, int len);
+void t_copy(tvalue tval1, tvalue *tval2);
 
 // mathematics:
-tvalue t_zero(dtype type);
-tvalue t_neg(tvalue x);
-tvalue t_inv(tvalue x);
 int t_equal(tvalue tval1, tvalue tval2);
 int t_is_zero(tvalue tval);
-tvalue t_sum(tvalue tval1, tvalue tval2);
-tvalue t_product(tvalue tval1, tvalue tval2);
+void t_zero(dtype t, tvalue *z);
+void t_identity(dtype t, tvalue *e);
+void t_neg(tvalue x, tvalue *neg);
+void t_inv(tvalue x, tvalue *inv);
+void t_sum(tvalue tval1, tvalue tval2, tvalue *sum);
+void t_product(tvalue tval1, tvalue tval2, tvalue *prod);
 
 #endif

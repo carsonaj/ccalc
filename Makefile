@@ -17,15 +17,15 @@ clean:
 	rm -f ./test/*_tests
 
 tests: type_tests array_tests matrix_tests polynomial_tests
-	#test/type_tests
-	#valgrind test/type_tests
-	#echo
-	#test/array_tests 
-	#valgrind test/array_tests
-	#echo 
-	#test/matrix_tests
-	#valgrind test/matrix_tests
-	#echo
+	test/type_tests
+	valgrind test/type_tests
+	echo
+	test/array_tests 
+	valgrind test/array_tests
+	echo 
+	test/matrix_tests
+	valgrind test/matrix_tests
+	echo
 	test/polynomial_tests
 	valgrind test/polynomial_tests --track-origins=yes
 	echo

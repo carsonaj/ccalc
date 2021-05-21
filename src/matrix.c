@@ -43,7 +43,8 @@ void mat_print(Matrix *mat) {
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
             tvalue entry = mat_get_entry(mat, i, j);
-            t_print(entry);
+            t_print(entry, FALSE);
+            printf(" ");
         }
         printf("\n");
     }
@@ -55,7 +56,7 @@ void mat_set_entry(Matrix *mat, int i, int j, tvalue tval){
     dtype s = tval.type;
     assert(t == s);
     assert((i <= mat->nrow) && (j <= mat->ncol));
-    mat->entries[i * mat->ncol + j] = tval;
+    t_copy(tval, &mat->entries[i * mat->ncol + j]);
     
     return;
 }
@@ -70,15 +71,18 @@ tvalue mat_get_entry(Matrix *mat, int i, int j) {
 // fill by row
 // make sure length of entries is rows * cols
 void mat_fill(Matrix *mat, tvalue *entries) {
+
     dtype t = mat->type;
     int n = mat->nrow;
     int p = mat->ncol;
+    int j;
+    for (j=0; j<n*p; j++) {
+        assert(entries[j].type == t);
+    }
 
     int i;
     for (i=0; i<n*p; i++) {
-        dtype s = entries[i].type;
-        assert(t == s);
-        mat->entries[i] = entries[i];
+        t_copy(entries[i], &mat->entries[i]);
     }
 
     return;
@@ -167,8 +171,8 @@ void mat_join(Matrix *A, Matrix *B, int axis, Matrix *join) {
     assert(t == B->type);
     assert(t == join->type);
 
-    // axis = 0 means vertical join
-    // axis = 1 means horizontal join
+    // axis = 0 means vertical join, i.e. a row join
+    // axis = 1 means horizontal join, i.e. a column join
     int m = A->nrow;
     int n = A->ncol;
     int r = B->nrow;
@@ -248,7 +252,8 @@ void mat_row_op2(Matrix *mat, int i, tvalue k) {
     int ncol = mat->ncol;
     int j;
     for (j=0; j<ncol; j=j+1) {
-        tvalue entry = t_product(k, mat_get_entry(mat, i, j));
+        tvalue entry = mat_get_entry(mat, i, j);
+        t_product(k, entry, &entry);
         mat_set_entry(mat, i, j, entry);
     }
 
@@ -263,8 +268,9 @@ void mat_row_op3(Matrix *mat, int i, int j, tvalue k) {
     int cols = mat->ncol;
     int col;
     for (col=0; col<cols; col=col+1) {
-        tvalue entry = t_product(k, mat_get_entry(mat, j, col));
-        entry = t_sum(mat_get_entry(mat, i, col), entry);
+        tvalue entry; 
+        t_product(mat_get_entry(mat, j, col), k, &entry);
+        t_sum(mat_get_entry(mat, i, col), entry, &entry);
         mat_set_entry(mat, i, col, entry);
     }
 
@@ -289,10 +295,13 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
             tvalue kron_prod[n];
             int k;
             for (k=0; k<n; k=k+1) {
-                kron_prod[k] = t_product(mat_get_entry(A, i, k), mat_get_entry(B, k, j));
+                tvalue aik = mat_get_entry(A, i, k);
+                tvalue bkj = mat_get_entry(B, k, j);
+                t_product(aik, bkj, &kron_prod[k]);
             }
 
-            tvalue entry = arr_sum(kron_prod, n);
+            tvalue entry;
+            arr_sum(kron_prod, n, &entry);
             mat_set_entry(prod, i, j, entry);
         }
     }
@@ -314,7 +323,10 @@ void mat_had_product(Matrix *A, Matrix *B, Matrix *prod) {
     int i, j;
     for (i=0; i<nrow; i++) {
         for (j=0; j<ncol; j++) {
-            tvalue entry = t_product(mat_get_entry(A, i, j), mat_get_entry(B, i, j));
+            tvalue aij = mat_get_entry(A, i, j);
+            tvalue bij = mat_get_entry(B, i, j);
+            tvalue entry;
+            t_product(aij, bij, &entry);
             mat_set_entry(prod, i, j, entry);
         }
     }
@@ -330,7 +342,8 @@ void mat_scale(tvalue k, Matrix *mat) {
     int i, j;
     for (i=0; i<nrow; i++) {
         for (j=0; j<ncol; j++) {
-            tvalue entry = t_product(k, mat_get_entry(mat, i, j));
+            tvalue entry = mat_get_entry(mat, i, j); 
+            t_product(k, entry, &entry);
             mat_set_entry(mat, i, j, entry);
         }
     }
@@ -350,7 +363,10 @@ void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
-            tvalue entry = t_sum(mat_get_entry(A, i, j), mat_get_entry(B, i, j));
+            tvalue aij = mat_get_entry(A, i, j);
+            tvalue bij = mat_get_entry(B, i, j);
+            tvalue entry;
+            t_sum(aij, bij, &entry);
             mat_set_entry(sum, i, j, entry);
         }
     }
@@ -393,7 +409,7 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
         row = start_row;
         while (row < nrow) {
             entry = mat_get_entry(mat, row, col);
-            if (t_equal(entry, t_zero(t)) == FALSE) {
+            if (t_is_zero(entry) == FALSE) {
                 val = FALSE;
                 break;
             }
@@ -408,7 +424,8 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
 
     // (row, col) is now pivot;
     // row operations to create a pivot of 1 and zeros below pivot
-    tvalue inv = t_inv(entry);
+    tvalue inv; 
+    t_inv(entry, &inv);
     mat_row_op2(mat, row, inv);
 
     if (start_row != row) {
@@ -417,8 +434,9 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
 
     row = row + 1;
     while (row < nrow) {
-        tvalue k = t_neg(mat_get_entry(mat, row, col));
-        if (t_equal(k, t_zero(DBL)) == FALSE) {
+        tvalue k; 
+        t_neg(mat_get_entry(mat, row, col), &k);
+        if (t_is_zero(k) == FALSE) {
             mat_row_op3(mat, row, start_row, k);
         }
         row = row + 1;
@@ -446,7 +464,7 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
         row = start_row;
         while (row < m) {
             entry = mat_get_entry(mat, row, col);
-            if (t_equal(entry, t_zero(t)) == FALSE) {
+            if (t_is_zero(entry) == FALSE) {
                 val = FALSE;
                 break;
             }
@@ -462,8 +480,8 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
     // now (row, col) is the pivot
     int prev_row = row-1;
     while (0 <= prev_row) {
-        entry = t_neg(mat_get_entry(mat, prev_row, col));
-        if (t_equal(entry, t_zero(t)) == FALSE)
+        t_neg(mat_get_entry(mat, prev_row, col), &entry);
+        if (t_is_zero(entry) == FALSE)
             mat_row_op3(mat, prev_row, row, entry);
         prev_row = prev_row - 1;
     }
