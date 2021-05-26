@@ -11,18 +11,22 @@
 void test_arr_equal() {
     double arr1[3] = {2, 4,-1};
     tvalue tarr1[3];
+    t_init_dbls(tarr1, 3);
     t_dbls(arr1, tarr1, 3);
 
     double arr2[2] = {1, 2};
     tvalue tarr2[2];
+    t_init_dbls(tarr2, 2);
     t_dbls(arr2, tarr2, 2);
 
     double arr3[3] = {2, 4, -2};
     tvalue tarr3[3];
+    t_init_dbls(tarr3, 3);
     t_dbls(arr3, tarr3, 3);
 
     double arr4[3] = {2, 4, -1};
     tvalue tarr4[3];
+    t_init_dbls(tarr4, 3);
     t_dbls(arr4, tarr4, 3);
 
     assert(arr_equal(tarr1, tarr2, 3, 2) == FALSE);
@@ -34,8 +38,10 @@ void test_arr_equal() {
 void test_arr_sum() {
     double arr[3] = {2, 1, -1};
     tvalue tarr[3];
+    t_init_dbls(tarr, 3);
     t_dbls(arr, tarr, 3);
     tvalue sum;
+    t_init_dbl(&sum);
     arr_sum(tarr, 3, &sum);
     assert(sum.val.dblval == 2.0);
 

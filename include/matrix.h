@@ -6,6 +6,7 @@
 
 // data structure:
 Matrix *mat_create(dtype t, int n, int p);
+void mat_init_dbl(Matrix *mat);
 void mat_init_ply(Matrix *mat, dtype coeff_type);
 void mat_delete(Matrix *mat);
 void mat_fill(Matrix *mat, tvalue *entries);

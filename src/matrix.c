@@ -28,11 +28,24 @@ Matrix *mat_create(dtype t, int n, int p) {
     return mat;
 }
 
-void mat_init_ply(Matrix *mat, dtype coeff_type) {
-    assert(mat->type == PLY);
-    int i;
+void mat_init_dbl(Matrix *mat) {
+    assert(mat->type == DBL);
     int n = mat->nrow;
     int p = mat->ncol;
+    int i;
+    for (i=0; i<n*p; i++) {
+        mat->entries[i].type = DBL;
+        mat->entries[i].val.dblval = 0.0;
+    }
+
+    return;
+}
+
+void mat_init_ply(Matrix *mat, dtype coeff_type) {
+    assert(mat->type == PLY);
+    int n = mat->nrow;
+    int p = mat->ncol;
+    int i;
     for (i=0; i<n*p; i++) {
                 tvalue tval;
                 t_init_ply(coeff_type, &tval);
@@ -153,7 +166,7 @@ void mat_fill_dbl(Matrix *mat, double *entries) {
     assert(mat->type == DBL);
     int len = mat->nrow * mat->ncol;
     tvalue t_entries[len];
-    
+    t_init_dbls(t_entries, len);
     t_dbls(entries, t_entries, len);
 
     mat_fill(mat, t_entries);
@@ -290,6 +303,16 @@ void mat_row_op1(Matrix *mat, int i, int j) {
     int ncol = mat->ncol;
     int rows_arr[1] = {i};
     Matrix *temp_i = mat_create(t, 1, ncol);
+    switch(t) {
+        case DBL:
+        mat_init_dbl(temp_i);
+            break;
+        case PLY: {
+            // poly entries must be initialized
+            dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
+            mat_init_ply(temp_i, coef_type);
+        }
+    }
     mat_get_rows(mat, temp_i, rows_arr);
     int col;
     for (col=0; col<ncol; col=col+1) {
@@ -310,12 +333,26 @@ void mat_row_op2(Matrix *mat, int i, tvalue k) {
     dtype s = k.type;
     assert(t == s);
     int ncol = mat->ncol;
+
+    tvalue entry;
+    switch(t) {
+        case DBL:
+            break;
+        case PLY: {
+            // poly entries must be initialized
+            dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
+            t_init_ply(coef_type, &entry);
+        }
+    }
+
     int j;
     for (j=0; j<ncol; j=j+1) {
-        tvalue entry = mat_get_entry(mat, i, j);
-        t_product(k, entry, &entry);
+        tvalue temp_entry = mat_get_entry(mat, i, j);
+        t_product(k, temp_entry, &entry);
         mat_set_entry(mat, i, j, entry);
     }
+
+    t_delete(&entry);
 
     return;
 }
@@ -327,12 +364,30 @@ void mat_row_op3(Matrix *mat, int i, int j, tvalue k) {
     assert(t == s);
     int cols = mat->ncol;
     int col;
+
+    tvalue entry; 
+    tvalue temp_entry;
+    switch(t) {
+        case DBL:
+        t_init_dbl(&entry);
+        t_init_dbl(&temp_entry);
+            break;
+        case PLY: {
+            // poly entries must be initialized
+            dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
+            t_init_ply(coef_type, &entry);
+            t_init_ply(coef_type, &temp_entry);
+        }
+    }
+
     for (col=0; col<cols; col=col+1) {
-        tvalue entry; 
-        t_product(mat_get_entry(mat, j, col), k, &entry);
-        t_sum(mat_get_entry(mat, i, col), entry, &entry);
+        t_product(mat_get_entry(mat, j, col), k, &temp_entry);
+        t_sum(mat_get_entry(mat, i, col), temp_entry, &entry);
         mat_set_entry(mat, i, col, entry);
     }
+
+    t_delete(&entry);
+    t_delete(&temp_entry);
 
     return;
 }
@@ -353,7 +408,13 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
     tvalue kron_prod[n];
     tvalue entry;
     switch(t) {
-        case DBL:
+        case DBL: {
+            t_init_dbl(&entry);
+            int k;
+            for (k=0; k<n; k++) {
+                 t_init_dbl(&kron_prod[k]);
+            }
+        }
             break;
         case PLY: {
             // poly entries must be initialized
@@ -435,7 +496,8 @@ void mat_scale(tvalue k, Matrix *mat) {
 }
 
 void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
-    assert(A->type == B->type);
+    dtype t = A->type;
+    assert(t == B->type);
     assert(A->nrow == B->nrow);
     assert(A->ncol == B->ncol);
     assert(A->nrow == sum->nrow);
@@ -443,12 +505,23 @@ void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
     int m = A->nrow;
     int n = A->ncol;
 
+    tvalue entry;
+    switch(t) {
+        case DBL: 
+            t_init_dbl(&entry);
+            break;
+        case PLY: {
+            // poly entries must be initialized
+            dtype coef_type = mat_get_entry(A, 0, 0).val.plyval->type;
+            t_init_ply(coef_type, &entry);
+        }
+    }
+
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
             tvalue aij = mat_get_entry(A, i, j);
             tvalue bij = mat_get_entry(B, i, j);
-            tvalue entry;
             t_sum(aij, bij, &entry);
             mat_set_entry(sum, i, j, entry);
         }
@@ -508,6 +581,13 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
     // (row, col) is now pivot;
     // row operations to create a pivot of 1 and zeros below pivot
     tvalue inv; 
+    switch(t) {
+        case DBL: 
+            t_init_dbl(&inv);
+            break;
+        case MOD: {
+        }
+    }
     t_inv(entry, &inv);
     mat_row_op2(mat, row, inv);
 
@@ -518,6 +598,13 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
     row = row + 1;
     while (row < nrow) {
         tvalue k; 
+        switch(t) {
+        case DBL: 
+            t_init_dbl(&k);
+            break;
+        case MOD: {
+        }
+    }
         t_neg(mat_get_entry(mat, row, col), &k);
         if (t_is_zero(k) == FALSE) {
             mat_row_op3(mat, row, start_row, k);
@@ -593,6 +680,14 @@ void mat_solve(Matrix *A, Matrix *b, Matrix *xsol) {
     assert(xsol->ncol == 1);
 
     Matrix *join = mat_create(t, m, m+1);
+    switch(t) {
+        case DBL: 
+            mat_init_dbl(join);
+            break;
+        case MOD: {
+            break;
+        }
+    }
     mat_join(A, b, 1, join);
     mat_rref(join);
     int cols_arr[1] = {m};
