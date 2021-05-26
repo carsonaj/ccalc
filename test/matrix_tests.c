@@ -23,6 +23,22 @@ void test_mat_create() {
     return;
 }
 
+void test_mat_init_ply() {
+    Matrix *mat = mat_create(PLY, 2, 3);
+    mat_init_ply(mat, DBL);
+
+    int i;
+    for(i=0; i<6; i++) {
+        assert(t_is_zero(mat->entries[i]) == TRUE);
+    }
+
+    mat_delete(mat);
+
+    return;
+
+}
+
+
 void test_mat_print() {
     // DBL ======================================
     Matrix *mat = mat_create(DBL, 2, 3);
@@ -69,19 +85,19 @@ void test_mat_set_entry() {
 
     // PLY ======================================
     Matrix *mat2 = mat_create(PLY, 1, 1);
+    mat_init_ply(mat2, DBL);
 
+    tvalue entry2; 
+    t_init_ply(DBL, &entry2);
     Polynomial *p = ply_create(DBL, 2);
     double coefs[3] = {.5, 2, -1.2};
     ply_fill_dbl(p, coefs);
-
-    tvalue entry2;
-    entry2.type = PLY;
-    entry2.val.plyval = p;
+    t_ply(p, &entry2);
 
     mat_set_entry(mat2, 0, 0, entry2);
-
     assert(t_equal(mat_get_entry(mat2, 0, 0), entry2));
 
+    t_delete(&entry2);
     ply_delete(p);
     mat_delete(mat2);
 
@@ -102,23 +118,39 @@ void test_mat_get_entry() {
 
     // PLY ======================================
     Matrix *mat2 = mat_create(PLY, 1, 1);
+    mat_init_ply(mat2, DBL);
 
     Polynomial *p = ply_create(DBL, 2);
     double coefs[3] = {.5, 2, -1.2};
     ply_fill_dbl(p, coefs);
 
     tvalue entry2;
-    entry2.type = PLY;
-    entry2.val.plyval = p;
+    t_init_ply(DBL, &entry2);
+    t_ply(p, &entry2);
 
     mat_set_entry(mat2, 0, 0, entry2);
 
     assert(t_equal(mat_get_entry(mat2, 0, 0), entry2));
 
+    t_delete(&entry2);
     ply_delete(p);
     mat_delete(mat2);
 
     //  ======================================
+
+    return;
+}
+
+void test_mat_copy() {
+    double entries[4] = {1, 2, 3, 4};
+    Matrix *mat = mat_create(DBL, 2, 2);
+    Matrix *matc = mat_create(DBL, 2, 2);
+    mat_fill_dbl(mat, entries);
+    mat_copy(mat, matc);
+    assert(mat_equal(mat, matc) == TRUE);
+
+    mat_delete(mat);
+    mat_delete(matc);
 
     return;
 }
@@ -140,15 +172,18 @@ void test_mat_fill() {
 
     // PLY ======================================
     Matrix *mat_ply = mat_create(PLY, 1, 2);
+    mat_init_ply(mat_ply, DBL);
     tvalue entries_ply[2];
     tvalue entry_ply0;
     tvalue entry_ply1;
 
+    t_init_ply(DBL, &entry_ply0);
+    t_init_ply(DBL, &entry_ply1);
+
     Polynomial *p = ply_create(DBL, 2);
     double coefs[3] = {-1.5, 3, 2};
     ply_fill_dbl(p, coefs);
-    entry_ply0.type = PLY;
-    entry_ply0.val.plyval = p;
+    t_ply(p, &entry_ply0);
 
     t_copy(entry_ply0, &entry_ply1);
     entries_ply[0] = entry_ply0;
@@ -160,6 +195,8 @@ void test_mat_fill() {
     assert(t_equal(ply00, entry_ply0) == TRUE);
     assert(t_equal(ply01, entry_ply1) == TRUE);
 
+    t_delete(&entry_ply0);
+    t_delete(&entry_ply1);
     ply_delete(p);
     mat_delete(mat_ply);
 
@@ -373,7 +410,7 @@ void test_mat_row_op3() {
     return;
 }
 
-void test_mat_product() {
+void test_mat_product_1() {
     // DBL ======================================
     Matrix *m1 = mat_create(DBL, 2,3);
     Matrix *m2 = mat_create(DBL, 3,2);
@@ -398,6 +435,68 @@ void test_mat_product() {
 
     return;
 }
+
+void test_mat_product_2() {
+    Matrix *m = mat_create(PLY, 2, 2);
+    mat_init_ply(m, DBL);
+
+    Matrix *n = mat_create(PLY, 2, 2);
+    mat_init_ply(n, DBL);
+
+    Matrix *prod = mat_create(PLY, 2, 2);
+    mat_init_ply(prod, DBL);
+
+    Matrix *check = mat_create(PLY, 2, 2);
+    mat_init_ply(check, DBL);
+
+    // initialized entries are degree zero and ply_fill_dbl requires length = deg + 1
+    mat_get_entry(m, 1, 1).val.plyval->deg = 1;
+    mat_get_entry(n, 1, 1).val.plyval->deg = 1;
+    mat_get_entry(check, 0, 1).val.plyval->deg = 1;
+    mat_get_entry(check, 1, 0).val.plyval->deg = 1;
+    mat_get_entry(check, 1, 1).val.plyval->deg = 2;
+
+    double ceof_m00[1] = {0};
+    double ceof_m01[1] = {1};
+    double ceof_m10[1] = {1};
+    double ceof_m11[2] = {-2, -1};
+
+    double ceof_n00[1] = {0};
+    double ceof_n01[1] = {1};
+    double ceof_n10[1] = {1};
+    double ceof_n11[2] = {.75, -.25};
+
+    double ceof_check00[1] = {1};
+    double ceof_check01[2] = {.75, -.25};
+    double ceof_check10[2] = {-2, -1};
+    double ceof_check11[3] = {-.5, -.25, .25};
+
+    ply_fill_dbl(mat_get_entry(m, 0, 0).val.plyval, ceof_m00);
+    ply_fill_dbl(mat_get_entry(m, 0, 1).val.plyval, ceof_m01);
+    ply_fill_dbl(mat_get_entry(m, 1, 0).val.plyval, ceof_m10);
+    ply_fill_dbl(mat_get_entry(m, 1, 1).val.plyval, ceof_m11);
+
+    ply_fill_dbl(mat_get_entry(n, 0, 0).val.plyval, ceof_m00);
+    ply_fill_dbl(mat_get_entry(n, 0, 1).val.plyval, ceof_m01);
+    ply_fill_dbl(mat_get_entry(n, 1, 0).val.plyval, ceof_m10);
+    ply_fill_dbl(mat_get_entry(n, 1, 1).val.plyval, ceof_m11);
+
+    ply_fill_dbl(mat_get_entry(check, 0, 0).val.plyval, ceof_check00);
+    ply_fill_dbl(mat_get_entry(check, 0, 1).val.plyval, ceof_check01);
+    ply_fill_dbl(mat_get_entry(check, 1, 0).val.plyval, ceof_check10);
+    ply_fill_dbl(mat_get_entry(check, 1, 1).val.plyval, ceof_check11);
+
+    mat_product(m, n, prod);
+    //mat_print(prod);
+
+    mat_delete(m);
+    mat_delete(n);
+    mat_delete(prod);
+    mat_delete(check);
+
+    return;
+}
+
 
 void test_mat_had_product() {
     // DBL ======================================
@@ -528,6 +627,7 @@ void test_mat_ref() {
     return;
 }
 
+
 void test_mat_rref() {
     // DBL ======================================
     Matrix *A = mat_create(DBL, 3, 3);
@@ -595,8 +695,10 @@ int main() {
     // data structure:
     //test_mat_print();
     test_mat_create();
+    test_mat_init_ply();
     test_mat_set_entry();
     test_mat_get_entry();
+    test_mat_copy();
     test_mat_fill();
     test_mat_equal(); 
     test_mat_get_rows();
@@ -607,8 +709,9 @@ int main() {
     // mathematics:
     test_mat_row_op1();
     test_mat_row_op2();
-    test_mat_row_op3();
-    test_mat_product();
+    //test_mat_row_op3();
+    //test_mat_product_1();
+    test_mat_product_2();
     test_mat_had_product();
     test_mat_scale();
     test_mat_sum();
@@ -618,6 +721,7 @@ int main() {
     test_mat_ref();
     test_mat_rref();
     test_mat_solve();
+    
     
     return 0;
 }

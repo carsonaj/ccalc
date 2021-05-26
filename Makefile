@@ -16,7 +16,7 @@ clean:
 	rm -f ./lib/*.so
 	rm -f ./test/*_tests
 
-tests: type_tests array_tests matrix_tests polynomial_tests
+tests: type_tests array_tests matrix_tests #polynomial_tests
 	test/type_tests
 	valgrind test/type_tests
 	echo

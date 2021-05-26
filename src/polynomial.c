@@ -47,6 +47,11 @@ Polynomial *ply_create(dtype t, int deg) {
     poly->deg = deg;
     poly->coefs = malloc((MAX_DEG + 1) * sizeof(tvalue));
 
+    int i;
+    for(i=0; i<=MAX_DEG; i++) {
+        poly->coefs[i].type = t;
+    }
+    
     return poly;
 }
 
@@ -56,12 +61,14 @@ void ply_delete(Polynomial *poly) {
     switch (t) {
         case DBL:
             break;
-        case ALN: // must free each value as well
+        case FFE: // must free each value as well
             break;
     }
 
     free(poly->coefs);
     free(poly);
+
+    poly = NULL;
 
     return;
 }
@@ -88,8 +95,19 @@ void ply_fill_dbl(Polynomial *poly, double *coefs) {
     assert(poly->type == DBL);
     int deg = poly->deg;
     tvalue t_coefs[deg + 1];
-    t_dbls(coefs, t_coefs, deg + 1);
+    t_init_dbls(t_coefs, deg+1);
+    t_dbls(coefs, t_coefs, deg+1);
+
+    if (poly->deg > 0) {
+        assert(t_is_zero(t_coefs[deg]) == FALSE);
+    }
+    
     ply_fill(poly, t_coefs);
+
+    int i;
+    for (i=0; i<=deg; i++) {
+        t_delete(&t_coefs[i]);
+    }
 
     return;
 }
@@ -106,9 +124,21 @@ void ply_set_coef(Polynomial *poly, int i, tvalue tval) {
 
 // copy coefs of poly p into poly q
 void ply_copy(Polynomial *p, Polynomial *q) {
-    assert(p->type == q->type);
-    assert(p->deg == q->deg);
+    dtype t = p->type;
+    assert(t == q->type);
     int d = p->deg;
+
+    //for(i=q->deg+1; i<d; i++) {
+    //    q->coefs[i].type = t;
+    //    switch(t) {
+    //        case DBL:   
+    //            q->coefs[i].val.dblval = 0;
+    //            break;
+    //        case MOD:
+    //            break;
+    //    }
+    //}
+    q->deg = d;
     int i;
     for (i=0; i <= d; i++) {
         tvalue coef = ply_get_coef(p, i);
@@ -269,9 +299,19 @@ void ply_zero(Polynomial *z) {
     z->deg = 0;
 
     tvalue tz;
-    t_zero(t, &tz);
+    switch(t) {
+        case DBL: 
+            t_init_dbl(&tz);
+            break;
+        case MOD:
+            break;
+    }
+
+    t_zero(&tz);
 
     ply_set_coef(z, 0, tz);
+
+    t_delete(&tz);
 
     return;
 }
@@ -281,15 +321,27 @@ void ply_monomial(int deg, Polynomial *m) {
     m->deg = deg;
     int i;
     tvalue t_z;
-    t_zero(t, &t_z);
     tvalue t_e;
-    t_identity(t, &t_e);
+    switch(t) {
+        case DBL: 
+            t_init_dbl(&t_z);
+            t_init_dbl(&t_e);
+            break;
+        case MOD:
+            break;
+    }
+
+    t_zero(&t_z);
+    t_identity(&t_e);
 
     for (i=0; i<deg; i++) {
         ply_set_coef(m, i, t_z);
     }
 
     ply_set_coef(m, deg, t_e);
+
+    t_delete(&t_z);
+    t_delete(&t_e);
 
     return;
 }
@@ -305,12 +357,27 @@ void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
     int deg2 = p2->deg;
 
     tvalue sum_coefs[deg1+1];
+    tvalue sum;
+
+    switch(t) {
+        case DBL: {
+            t_init_dbl(&sum);
+            int i;
+            for (i=0; i<=deg1; i++) {
+                t_init_dbl(&sum_coefs[i]);
+            }
+        }
+        
+    }
+
     int i;
     for (i=0; i<=deg2; i++) {
-        tvalue sum;
         t_sum(ply_get_coef(poly1, i), ply_get_coef(poly2, i), &sum);
         t_copy(sum, &sum_coefs[i]);
     }
+    
+    t_delete(&sum);
+
     for (i=deg2+1; i<=deg1; i++) {
         t_copy(ply_get_coef(p1, i), &sum_coefs[i]);
     }
@@ -324,10 +391,13 @@ void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum_poly) {
     }
 
     sum_poly->deg = deg;
+    ply_fill(sum_poly, sum_coefs);
+
     for (i=0; i<=deg; i++) {
-        tvalue coef = sum_coefs[i];
-        ply_set_coef(sum_poly, i, coef);
+        t_delete(&sum_coefs[i]);
     }
+
+
 
     return;
 }
@@ -351,28 +421,35 @@ void ply_product(Polynomial *poly1, Polynomial *poly2, Polynomial *prod_poly) {
         int deg1 = p1->deg;
         int deg2 = p2->deg;
         int deg = deg1+deg2;
-
-//      *******************************
-//      *******************************
-//      *******************************
-//      *******************************
-//      Warning: might need to delete lots of coeficient values to 
-//               avoid memory leak in the case of algebraic numbers
-        int k;
         prod_poly->deg = deg;
+
+        tvalue sum_k;
+        tvalue s;
+
+        switch(t) {
+            case DBL:
+                t_init_dbl(&sum_k);
+                t_init_dbl(&s);
+                break;
+            case MOD:
+                break;
+        }
+
+        int k;
         for (k=0; k<=deg; k++) {
-            tvalue sum_k; 
-            t_zero(t, &sum_k);
+            t_zero(&sum_k);
                 int l;
                 for (l=0; l<=k; l++) {
                     if ((l<=deg1)&&(k-l<=deg2)) {
-                        tvalue s;
                         t_product(ply_get_coef(p1, l), ply_get_coef(p2, k-l), &s);
                         t_sum(sum_k, s, &sum_k);
                     }
                 }
             ply_set_coef(prod_poly, k, sum_k);
         }
+
+        t_delete(&sum_k);
+        t_delete(&s);
 
         return;
     }
@@ -407,33 +484,38 @@ void ply_neg(Polynomial *p, Polynomial *neg) {
     assert(t == neg->type);
 
     tvalue t_e;
-    t_identity(t, &t_e);
     tvalue t_neg_e;
+
+    switch(t) {
+        case DBL:
+            t_init_dbl(&t_e);
+            t_init_dbl(&t_neg_e);
+            break;
+        case MOD:
+            break;
+    }
+
+    t_identity(&t_e);
     t_neg(t_e, &t_neg_e);
  
     ply_scale(t_neg_e, p, neg);
+
+    t_delete(&t_e);
+    t_delete(&t_neg_e);
     return;
 }
 
-
-
-
-
-**********************************
-**********************************
-**********************************
-**********************************
-
-
-
-
-//---------------------------------------------------------------
-void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
+// f = a_nx^n + ... + a_0
+// g = b_mx^m _ ... + b_0
+// put q = a/bx^(n-m)
+// put r = f - gq which kills the leading term in f
+static void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
     dtype t = f->type;
     assert(t == g->type);
     assert(t == q->type);
     assert(t == r->type);
 
+    assert(g->deg <= f->deg);
     int deg_q = f->deg - g->deg;
     ply_monomial(deg_q, q);
 
@@ -442,7 +524,7 @@ void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
     t_inv(ply_get_coef(g, g->deg), &g_coef_inv);
     tvalue coef;
     t_product(f_coef, g_coef_inv, &coef);
-    ply_set_coef(&q, deg_q, coef);
+    ply_set_coef(q, deg_q, coef);
 
     Polynomial *prod = ply_create(t, 0);
     Polynomial *neg = ply_create(t, 0);
@@ -453,180 +535,207 @@ void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
     ply_delete(prod);
     ply_delete(neg);
 
-    PolyMatrix pair = pymat_create(1, 2);
-    pymat_set_element(&pair, 0, 0, q);
-    pymat_set_element(&pair, 0, 1, r);
-
     return;
 }
 
-/*
 // Division algorithm: divides f by g and returns struct containing quotient, remainder.
 // Remember to free pair and the polys it contains after use.
-PolyMatrix ply_division(Polynomial f, Polynomial g) {
-    assert(ply_is_zero(g)==FALSE);
-    Polynomial q0 = ply_zero();
-    Polynomial r0 = ply_copy(f);
+void ply_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r) {
+    dtype t = f->type;
+    assert(t == g->type);
+    assert(t == q->type);
+    assert(t == r->type);
+    assert(ply_is_zero(g) == FALSE);
 
-    Polynomial q = q0;
-    Polynomial r = r0;
-    PolyMatrix pair;
+    ply_zero(q);
+    ply_copy(f, r);
 
-    if (f.deg < g.deg || ply_is_zero(f)==TRUE) {
-        pair = pymat_create(1,2);
-        pymat_set_element(&pair, 0, 0, q);
-        pymat_set_element(&pair, 0, 1, r);
+    if ((f->deg < g->deg) || (ply_is_zero(f) == TRUE)) {
 
-        return pair;
+        return;
     }
     else {
-        while (r.deg >= g.deg && ply_is_zero(r)==FALSE) {
-            pair = sub_division(r, g);
-            Polynomial temp_q = pymat_get_element(pair, 0, 0);
-            Polynomial temp_r = pymat_get_element(pair, 0, 1);
+        Polynomial *q_temp = ply_create(t, 0);
+        Polynomial *r_temp = ply_create(t, 0);
 
-            q = ply_sum(q, temp_q);
-            r = ply_copy(temp_r);
-
+        while ((r->deg >= g->deg) && (ply_is_zero(r)==FALSE)) {
+            sub_division(r, g, q_temp, r_temp);
+            ply_sum(q, q_temp, q);
+            ply_copy(r_temp, r);
         }
 
-        pair = pymat_create(1,2);
-        pymat_set_element(&pair, 0, 0, q);
-        pymat_set_element(&pair, 0, 1, r);
+        ply_delete(q_temp);
+        ply_delete(r_temp);
 
-        return pair;
+        return;
     }
 }
 
-// return gcd and Bezout coefficients for f,g
-PolyMatrix ply_gcd(Polynomial f, Polynomial g) {
-    assert((ply_is_zero(f)==TRUE && ply_is_zero(f)==TRUE)==FALSE);
-    PolyMatrix result = pymat_create(1, 3);
+// return gcd and Bezout coefficients for f,g, i.e. gcd = af+bg
+void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polynomial *b) {
+    dtype t = f->type;
+    assert(t == g->type);
+    assert(t == gcd->type);
+    assert(t == a->type);
+    assert(t == b->type);
+    assert(((ply_is_zero(f) == TRUE) && (ply_is_zero(g) == TRUE)) == FALSE);
 
     if (ply_is_zero(f)==TRUE) {
-        pymat_set_element(&result, 0, 0, g);
-        pymat_set_element(&result, 0, 1, ply_zero());
-        pymat_set_element(&result, 0, 2, ply_monomial(0));
-
-        return result;
+        ply_copy(g, gcd);
+        ply_zero(a);
+        ply_monomial(0, b);
+    
+        return;
     }
-
     else if (ply_is_zero(g)==TRUE) {
-        pymat_set_element(&result, 0, 0, f);
-        pymat_set_element(&result, 0, 1, ply_monomial(0));
-        pymat_set_element(&result, 0, 2, ply_zero());
+        ply_copy(f, gcd);
+        ply_monomial(0, a);
+        ply_zero(b);
 
-        return result;
+        return;
     }
-
     else {
-        int flip = FALSE;
-        Polynomial p1;
-        Polynomial p2;
-        if (f.deg > g.deg) {
-            p1 = f;
-            p2 = g;
+        // use division alg to get r0 = q1*r1 + r2
+        // then gcd(r0, r1) = gcd(r1, r2)
+        // and (r1, r2) = (r0, r1) |0   1|
+        //                         |1 -q1|
+        // repeat this to get (r_{k-1}, r_k) = (r0, r1) * product from i = 1 to k-1 |0    1|
+        //                                                                          |1 -q_i|
+        // repeat until r_k = 0, then r_{k-1} = gcd(r0, r1)
+
+        Polynomial *q1 = ply_create(t, 0);
+        Polynomial *r0 = ply_create(t, 0); 
+        Polynomial *r1 = ply_create(t, 0);
+        Polynomial *r2 = ply_create(t, 0);
+
+        ply_copy(f, r0);
+        ply_copy(g, r1);
+        ply_division(r0, r1, q1, r2);
+
+        Matrix *prod = mat_create(PLY, 2, 2);
+        Matrix *prod_temp = mat_create(PLY, 2, 2);
+        Matrix *next = mat_create(PLY, 2, 2);
+
+        mat_init_ply(prod, t);
+        mat_init_ply(prod_temp, t);
+        mat_init_ply(next, t);
+
+        Polynomial *z = ply_create(t, 0);
+        Polynomial *e = ply_create(t, 0);
+        Polynomial *neg_q1 = ply_create(t, 0);
+
+        ply_zero(z);
+        ply_monomial(0, e);
+        ply_neg(q1, neg_q1);
+
+        ply_copy(z, mat_get_entry(prod, 0, 0).val.plyval);
+        ply_copy(e, mat_get_entry(prod, 0, 1).val.plyval);
+        ply_copy(e, mat_get_entry(prod, 1, 0).val.plyval);
+        ply_copy(neg_q1, mat_get_entry(prod, 1, 1).val.plyval);
+
+        mat_copy(prod, next);
+
+        while(ply_is_zero(r2) == FALSE) {
+            ply_copy(r1, r0);
+            ply_copy(r2, r1);
+            ply_division(r0, r1, q1, r2);
+
+            ply_neg(q1, neg_q1); // -q1
+            ply_copy(neg_q1, mat_get_entry(next, 1, 1).val.plyval);
+            mat_product(prod, next, prod_temp);
+
+            mat_copy(prod_temp, prod);
         }
-        else {
-            p1 = g;
-            p2 = f;
-            flip = TRUE;
-        }
 
-        PolyMatrix a = pymat_create(1, 2);
-        PolyMatrix b = pymat_create(1, 2);
-        PolyMatrix c = pymat_create(1, 2);
-
-        pymat_set_element(&a, 0, 0, ply_monomial(0));
-        pymat_set_element(&a, 0, 1, ply_zero());
-        pymat_set_element(&b, 0, 0, ply_zero());
-        pymat_set_element(&b, 0, 1, ply_monomial(0));
-        pymat_set_element(&c, 0, 0, ply_zero());
-        pymat_set_element(&c, 0, 1, ply_monomial(0));
-
-        while(1) {
-            PolyMatrix qr = ply_division(p1, p2);
-            Polynomial q = pymat_get_element(qr, 0, 0);
-            Polynomial r = pymat_get_element(qr, 0, 1);
-
-            if (ply_is_zero(r))
+        int deg = r1->deg;
+        tvalue lead_coef = ply_get_coef(r1, deg);
+        tvalue lead_coef_inv; 
+        switch (t) {
+            case DBL:
+                t_init_dbl(&lead_coef_inv);
                 break;
-
-            PolyMatrix scaled = pymat_poly_scale(q, b);
-            PolyMatrix neg_qb = pymat_scale(-1.0, scaled);
-            c = pymat_sum(a, neg_qb);
-
-            p1 = ply_copy(p2);
-            p2 = ply_copy(r);
-
-            a = b;
-            b = c;
-
-        }
-        double coef = ply_get_coef(p2, p2.deg);
-        if (coef != 1.0) {
-            Polynomial t_p2 = p2;
-            PolyMatrix t_c = c;
-
-            p2 = ply_scale(1.0/coef, t_p2);
-            c = pymat_scale(1.0/coef, t_c);
+            //case FFE:
+            //    t_init_ffe(t, lead_coef_inv);
 
         }
 
-        Polynomial c00 = pymat_get_element(c, 0, 0);
-        Polynomial c01 = pymat_get_element(c, 0, 1);
+        t_inv(lead_coef, &lead_coef_inv);
+        ply_scale(lead_coef_inv, r1, gcd);
+        ply_scale(lead_coef_inv, mat_get_entry(prod, 0, 0).val.plyval, a);
+        ply_scale(lead_coef_inv, mat_get_entry(prod, 1, 0).val.plyval, b);
 
-        pymat_set_element(&result, 0, 0 ,p2);
-        if (flip == TRUE) {
-            pymat_set_element(&result, 0, 1, c01);
-            pymat_set_element(&result, 0, 2, c00);
-        }
-        else {
-            pymat_set_element(&result, 0, 1, c00);
-            pymat_set_element(&result, 0, 2, c01);
-        }
+        t_delete(&lead_coef_inv);
 
+        ply_delete(q1);
+        ply_delete(r0);
+        ply_delete(r1);
+        ply_delete(r2);
+        ply_delete(z);
+        ply_delete(e);
+        ply_delete(neg_q1);
 
-        return result;
+        mat_delete(prod);
+        mat_delete(prod_temp);
+        mat_delete(next);
+
+        return;
     }
 }
 
 //polynomial arithmetic modulo m(x)
 //--------------------------------------------------
-Polynomial pymod_reduce(Polynomial p, Polynomial m) {
+void ply_mod_reduce(Polynomial *p, Polynomial *m) {
+    dtype t = p->type;
+    assert(t == m->type);
     assert(ply_is_zero(m)==FALSE);
-    PolyMatrix pair = ply_division(p, m);
-    Polynomial pmodm = pymat_get_element(pair, 0, 1);
-    return pmodm;
+
+    Polynomial *q = ply_create(t, 0);
+    Polynomial *r = ply_create(t, 0);
+    ply_division(p, m, q, r);
+    
+    ply_copy(r, p);
+    ply_delete(q);
+    ply_delete(r);
+    
+    return;
 }
 
-Polynomial pymod_inv(Polynomial p, Polynomial m) {
-    PolyMatrix res = ply_gcd(p,m);
-    Polynomial pinv_modm = pymat_get_element(res, 0, 1);
-    if (pinv_modm.deg >= m.deg) {
-        pinv_modm = pymod_reduce(p, m);
-    }
+void ply_mod_inv(Polynomial *p, Polynomial *inv, Polynomial *m) {
+    dtype t = p->type;
+    assert(t == m->type);
+    assert(t == inv->type);
+    assert(ply_is_zero(m)==FALSE);
 
-    return pinv_modm;
+    Polynomial *gcd = ply_create(t, 0);
+    Polynomial *a = ply_create(t, 0);
+    Polynomial *b = ply_create(t, 0);
+    ply_gcd(p, m, gcd, a, b);
+
+    ply_copy(a, inv);
+    ply_mod_reduce(inv, m);
+
+    ply_delete(gcd);
+    ply_delete(a);
+    ply_delete(b);
+
+    return;
 }
 
-Polynomial pymod_sum(Polynomial p, Polynomial q, Polynomial m) {
-    Polynomial sum = ply_sum(p, q);
-    sum = pymod_reduce(sum, m);
+void ply_mod_sum(Polynomial *p, Polynomial *q, Polynomial *sum, Polynomial *m) {
+    ply_sum(p, q, sum);
+    ply_mod_reduce(sum, m);
 
-    return sum;
+    return;
 }
 
-Polynomial pymod_product(Polynomial p, Polynomial q, Polynomial m) {
-    Polynomial prod = ply_product(p, q);
-    prod = pymod_reduce(prod, m);
+void ply_mod_product(Polynomial *p, Polynomial *q, Polynomial *prod, Polynomial *m)  {
+    ply_product(p, q, prod);
+    ply_mod_reduce(prod, m);
 
-    return prod;
+    return;
 }
 
-
-
-
+/*
 
 
 // analysis

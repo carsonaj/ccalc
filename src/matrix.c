@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "../include/array.h"
 #include "../include/matrix.h"
+#include "../include/polynomial.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -27,15 +28,52 @@ Matrix *mat_create(dtype t, int n, int p) {
     return mat;
 }
 
+void mat_init_ply(Matrix *mat, dtype coeff_type) {
+    assert(mat->type == PLY);
+    int i;
+    int n = mat->nrow;
+    int p = mat->ncol;
+    for (i=0; i<n*p; i++) {
+                tvalue tval;
+                t_init_ply(coeff_type, &tval);
+                Polynomial *p = tval.val.plyval;
+                ply_zero(p);
+                mat->entries[i] = tval;
+    }
+
+    return;
+}
+
 void mat_delete(Matrix *mat) {
     assert(mat != NULL);
+    dtype t = mat->type;
+    int n = mat->nrow;
+    int p = mat->ncol;
+    int i;
+    switch (t) {
+        case DBL:
+            break;
+        case PLY: {
+            for(i=0; i<n*p; i++) {
+                Polynomial *p = mat->entries[i].val.plyval;
+                if (p != NULL) {
+                    ply_delete(p);
+                }
+            }
+
+            break;
+        }
+    }
     free(mat->entries);
     free(mat);
+
+    mat = NULL;
 
     return;
 }
 
 void mat_print(Matrix *mat) {
+    assert(mat != NULL);
     dtype t = mat->type;
     int rows = mat->nrow;
     int cols = mat->ncol;
@@ -52,6 +90,7 @@ void mat_print(Matrix *mat) {
 }
 
 void mat_set_entry(Matrix *mat, int i, int j, tvalue tval){
+    assert(mat != NULL);
     dtype t = mat->type;
     dtype s = tval.type;
     assert(t == s);
@@ -68,8 +107,28 @@ tvalue mat_get_entry(Matrix *mat, int i, int j) {
     return entry;
 } 
 
+// copy mat1 into mat2
+void mat_copy(Matrix *mat1, Matrix *mat2) {
+    assert(mat1->type == mat2->type);
+    int n = mat1->nrow;
+    int p = mat1->ncol;
+    assert(n == mat2->nrow);
+    assert(p == mat2->ncol);
+
+    int i, j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<p; j++) {
+            tvalue entryij = mat_get_entry(mat1, i, j);
+            mat_set_entry(mat2, i, j, entryij);
+        }
+    }
+
+    return;
+}
+
 // fill by row
 // make sure length of entries is rows * cols
+// entries must be initialized
 void mat_fill(Matrix *mat, tvalue *entries) {
 
     dtype t = mat->type;
@@ -94,6 +153,7 @@ void mat_fill_dbl(Matrix *mat, double *entries) {
     assert(mat->type == DBL);
     int len = mat->nrow * mat->ncol;
     tvalue t_entries[len];
+    
     t_dbls(entries, t_entries, len);
 
     mat_fill(mat, t_entries);
@@ -279,7 +339,9 @@ void mat_row_op3(Matrix *mat, int i, int j, tvalue k) {
 
 // standard matrix product
 void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
-    assert(A->type == B->type);
+    dtype t = A->type;
+    assert(t == B->type);
+    assert(t == prod->type);
     assert(A->ncol == B->nrow);
     assert(A->nrow == prod->nrow);
     assert(B->ncol == prod->ncol);
@@ -288,23 +350,44 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
     n = A->ncol;
     p = B->ncol;
 
+    tvalue kron_prod[n];
+    tvalue entry;
+    switch(t) {
+        case DBL:
+            break;
+        case PLY: {
+            // poly entries must be initialized
+            dtype coef_type = mat_get_entry(A, 0, 0).val.plyval->type;
+            t_init_ply(coef_type, &entry);
+            int k;
+            for (k=0; k<n; k++) {
+                 t_init_ply(coef_type, &kron_prod[k]);
+            }
+        }
+    }
+
+
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<p; j=j+1) {
-
-            tvalue kron_prod[n];
             int k;
-            for (k=0; k<n; k=k+1) {
+            for (k=0; k<n; k++) {
                 tvalue aik = mat_get_entry(A, i, k);
                 tvalue bkj = mat_get_entry(B, k, j);
                 t_product(aik, bkj, &kron_prod[k]);
             }
-
-            tvalue entry;
+            
             arr_sum(kron_prod, n, &entry);
             mat_set_entry(prod, i, j, entry);
         }
     }
+
+    t_delete(&entry);
+    int k;
+    for (k=0; k<n; k++) {
+        t_delete(&kron_prod[k]);
+    }
+
 
     return;
 }
@@ -467,7 +550,7 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
             if (t_is_zero(entry) == FALSE) {
                 val = FALSE;
                 break;
-            }
+            } 
             row = row + 1;
         }
         if (val == FALSE)
