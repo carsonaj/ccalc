@@ -11,15 +11,17 @@ typedef enum dtype dtype;
 typedef union value value;
 typedef struct tvalue tvalue;
 
-struct Modulo;
+struct ModularInt;
 struct Matrix;
 struct Polynomial;
 
-typedef struct Modulo Modulo;
+typedef struct ModularInt ModularInt;
 typedef struct Matrix Matrix;
 typedef struct Polynomial Polynomial;
 
 enum dtype {
+    // int
+    INT,
     // double
     DBL,
     // integer modulo p
@@ -35,8 +37,9 @@ enum dtype {
 };
 
 union value {
+    int intval;
     double dblval;
-    Modulo *modval;
+    ModularInt *modval;
     Polynomial *plyval;
     Matrix *matval;
 };
@@ -47,8 +50,7 @@ struct tvalue {
 };
 
 // integer modulo p
-struct Modulo{
-    dtype type;
+struct ModularInt {
     int modulus;
     int residue;
 };
@@ -74,6 +76,10 @@ struct Polynomial {
 // data structure:
 void t_print(tvalue tval, int newline);
 
+void t_init_int(tvalue *tval);
+void t_int(int val, tvalue *tval);
+void t_init_ints(tvalue *tvals, int len);
+void t_ints(int *vals, tvalue *tvals, int len);
 void t_init_dbl(tvalue *tval);
 void t_dbl(double val, tvalue *tval);
 void t_init_dbls(tvalue *tvals, int len);

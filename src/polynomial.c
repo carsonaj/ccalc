@@ -595,6 +595,8 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
         return;
     }
     else {
+        Polynomial *max = max_deg(f, g);
+        Polynomial *min = min_deg(f,g);
         // use division alg to get r0 = q1*r1 + r2
         // then gcd(r0, r1) = gcd(r1, r2)
         // and (r1, r2) = (r0, r1) |0   1|
@@ -608,8 +610,8 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
         Polynomial *r1 = ply_create(t, 0);
         Polynomial *r2 = ply_create(t, 0);
 
-        ply_copy(f, r0);
-        ply_copy(g, r1);
+        ply_copy(max, r0);
+        ply_copy(min, r1);
         ply_division(r0, r1, q1, r2);
 
         Matrix *prod = mat_create(PLY, 2, 2);
@@ -661,11 +663,17 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
 
         t_inv(lead_coef, &lead_coef_inv);
         ply_scale(lead_coef_inv, r1, gcd);
-        ply_scale(lead_coef_inv, mat_get_entry(prod, 0, 0).val.plyval, a);
-        ply_scale(lead_coef_inv, mat_get_entry(prod, 1, 0).val.plyval, b);
+
+        if (ply_equal(max, f) == TRUE) {
+            ply_scale(lead_coef_inv, mat_get_entry(prod, 0, 0).val.plyval, a);
+            ply_scale(lead_coef_inv, mat_get_entry(prod, 1, 0).val.plyval, b);
+        }
+        else {
+            ply_scale(lead_coef_inv, mat_get_entry(prod, 0, 0).val.plyval, b);
+            ply_scale(lead_coef_inv, mat_get_entry(prod, 1, 0).val.plyval, a);
+        }
 
         t_delete(&lead_coef_inv);
-
         ply_delete(q1);
         ply_delete(r0);
         ply_delete(r1);

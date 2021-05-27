@@ -25,8 +25,11 @@ void arr_sum(tvalue *arr, int len, tvalue *sum) {
     int i;
     tvalue sum_temp;
     switch(t) {
+        case INT:
+            t_init_int(&sum_temp);
+            break;
         case DBL:
-        t_init_dbl(&sum_temp);
+            t_init_dbl(&sum_temp);
             break;
         case PLY: {
             dtype coef_type = arr[0].val.plyval->type;

@@ -96,7 +96,7 @@ void test_t_init_ply() {
     return;
 }
 
-void test_t_copy_1() {
+void test_t_copy_2() {
     tvalue tval1;
     t_init_dbl(&tval1);
 
@@ -115,7 +115,7 @@ void test_t_copy_1() {
     return;
 }
 
-void test_t_copy_2() {
+void test_t_copy_3() {
     tvalue tval1;
     t_init_ply(DBL, &tval1);
 
@@ -138,7 +138,7 @@ void test_t_copy_2() {
     return;
 }
 
-void test_t_equal_1() {
+void test_t_equal_2() {
     tvalue tval1;
     t_init_dbl(&tval1);
     t_dbl(1.0, &tval1);
@@ -160,7 +160,7 @@ void test_t_equal_1() {
     return;
 }
 
-void test_t_equal_2() {
+void test_t_equal_3() {
     tvalue tval1;
     t_init_ply(DBL, &tval1);
     tvalue tval2;
@@ -188,7 +188,7 @@ void test_t_equal_2() {
     return;
 }
 
-void test_t_is_zero_1() {
+void test_t_is_zero_2() {
     tvalue tval1;
     tval1.type = DBL;
     tval1.val.dblval = 0.00000000000000001;
@@ -204,7 +204,7 @@ void test_t_is_zero_1() {
     t_delete(&tval2);
 }
 
-void test_t_is_zero_2() {
+void test_t_is_zero_3() {
     tvalue tval1;
     t_init_ply(DBL, &tval1);
     Polynomial *p1 = ply_create(DBL, 2);
@@ -231,7 +231,7 @@ void test_t_is_zero_2() {
     return;
 }
 
-void test_t_zero_1() {
+void test_t_zero_2() {
     tvalue z;
     t_init_dbl(&z);
     t_zero(&z);
@@ -242,7 +242,7 @@ void test_t_zero_1() {
     return;
 }
 
-void test_t_zero_2() {
+void test_t_zero_3() {
     tvalue z;
     t_init_ply(DBL, &z);
     t_zero(&z);
@@ -253,7 +253,7 @@ void test_t_zero_2() {
     return;
 }
 
-void test_t_identity_1() {
+void test_t_identity_2() {
     tvalue e;
     t_init_dbl(&e);
     t_identity(&e);
@@ -274,7 +274,7 @@ void test_t_identity_1() {
     return;
 }
 
-void test_t_neg_1() {
+void test_t_neg_2() {
     tvalue x;
     t_init_dbl(&x);
     tvalue neg;
@@ -295,7 +295,7 @@ void test_t_neg_1() {
     return;
 }
 
-void test_t_neg_2() {
+void test_t_neg_3() {
     tvalue x;
     t_init_ply(DBL, &x);
     double coef_x[3] = {1, 0, -3};
@@ -328,8 +328,11 @@ void test_t_neg_2() {
 
 void test_t_inv() {
     tvalue x; 
+    t_init_dbl(&x);
     tvalue inv;
+    t_init_dbl(&inv);
     tvalue check;
+    t_init_dbl(&check);
     t_dbl(2, &x);
     t_inv(x, &inv);
     t_dbl(0.5, &check);
@@ -339,6 +342,26 @@ void test_t_inv() {
 }
 
 void test_t_sum_1() {
+    tvalue tval1;
+    tvalue tval2;
+    tvalue sum;  
+    tvalue check;
+    t_init_int(&tval1);
+    t_init_int(&tval2);
+    t_init_int(&sum);
+    t_init_int(&check);
+
+    t_int(2, &tval1);
+    t_int(-3, &tval2);
+    t_sum(tval1, tval2, &sum);
+    t_int(-1, &check);
+    
+    assert(t_equal(sum, check) == TRUE);
+
+    return;
+}
+
+void test_t_sum_2() {
     tvalue tval1;
     t_init_dbl(&tval1);
     tvalue tval2;
@@ -363,7 +386,7 @@ void test_t_sum_1() {
     return;
 }
 
-void test_t_sum_2() {
+void test_t_sum_3() {
     tvalue tval1;
     t_init_ply(DBL, &tval1);
     double coef_1[3] = {1, 2, 3};
@@ -407,6 +430,30 @@ void test_t_product_1() {
     tvalue tval2;
     tvalue prod;  
     tvalue check;
+    t_init_int(&tval1);
+    t_init_int(&tval2);
+    t_init_int(&prod);
+    t_init_int(&check);
+
+    t_int(2, &tval1);
+    t_int(-3, &tval2);
+    t_product(tval1, tval2, &prod);
+    t_int(-6, &check);
+    
+    assert(t_equal(prod, check) == TRUE);
+
+    return;
+}
+
+void test_t_product_2() {
+    tvalue tval1;
+    tvalue tval2;
+    tvalue prod;  
+    tvalue check;
+    t_init_dbl(&tval1);
+    t_init_dbl(&tval2);
+    t_init_dbl(&prod);
+    t_init_dbl(&check);
 
     t_dbl(2.0, &tval1);
     t_dbl(-3.0, &tval2);
@@ -418,7 +465,7 @@ void test_t_product_1() {
     return;
 }
 
-void test_t_product_2() {
+void test_t_product_3() {
     tvalue tval1;
     tvalue tval2;
     tvalue prod;  
@@ -471,24 +518,25 @@ int main() {
     test_t_init_dbls(); // x 
     test_t_dbls(); // passed
     test_t_init_ply();
-    test_t_copy_1(); // passed
     test_t_copy_2(); // passed
-    /*
-    test_t_equal_1(); // passed
-    test_t_equal_2(); // x passed
-    test_t_is_zero_1(); // passed
-    test_t_is_zero_2(); // x passed
-    test_t_zero_1(); // passed
+    test_t_copy_3(); // passed
+    test_t_equal_2(); // passed
+    test_t_equal_3(); // x passed
+    test_t_is_zero_2(); // passed
+    test_t_is_zero_3(); // x passed
     test_t_zero_2(); // passed
-    test_t_identity_1(); // passed
-    test_t_neg_1(); // passed
-    test_t_neg_2(); // x
+    test_t_zero_3(); // passed
+    test_t_identity_2(); // passed
+    test_t_neg_2(); // passed
+    test_t_neg_3(); // x
     test_t_inv(); // passed
-    test_t_sum_1(); // passed
-    test_t_sum_2(); // x
-    test_t_product_1(); // passed
-    test_t_product_2(); // x
-    */
+    test_t_sum_1();
+    test_t_sum_2(); // passed
+    test_t_sum_3(); // x
+    test_t_product_1();
+    test_t_product_2(); // passed
+    test_t_product_3(); // x
+    
 
     return 0;
 }   

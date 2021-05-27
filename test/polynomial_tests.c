@@ -452,7 +452,7 @@ void test_ply_division() {
     return;
 }
 
-void test_ply_gcd() {
+void test_ply_gcd_1() {
     Polynomial *f = ply_create(DBL, 3);
     Polynomial *g = ply_create(DBL, 2);
     Polynomial *gcd = ply_create(DBL, 0);
@@ -490,7 +490,46 @@ void test_ply_gcd() {
     ply_delete(a_check);
     ply_delete(b_check);
 
+    return;
+}
+
+void test_ply_gcd_2() {
+    Polynomial *f = ply_create(DBL, 2);
+    Polynomial *g = ply_create(DBL, 3);
+    Polynomial *gcd = ply_create(DBL, 0);
+    Polynomial *a = ply_create(DBL, 0);
+    Polynomial *b = ply_create(DBL, 0);
+    Polynomial *gcd_check = ply_create(DBL, 1);
+    Polynomial *a_check = ply_create(DBL, 1);
+    Polynomial *b_check = ply_create(DBL, 0);
+
+    double coef_g[4] = {-6, -5, 2, 1};
+    double coef_f[3] = {-9, 0, 1};
+    double coef_gcd_check[2] = {3, 1};
+    double coef_b_check[2] = {.25};
+    double coef_a_check[2] = {-.5, -.25};
+
+    ply_fill_dbl(f, coef_f);
+    ply_fill_dbl(g, coef_g);
+    ply_fill_dbl(gcd_check, coef_gcd_check);
+    ply_fill_dbl(a_check, coef_a_check);
+    ply_fill_dbl(b_check, coef_b_check);
+
+    ply_gcd(f, g, gcd, a, b);
+
+    assert(ply_equal(gcd, gcd_check) == TRUE);
+    assert(ply_equal(a, a_check) == TRUE);
+    assert(ply_equal(b, b_check) == TRUE);
     
+
+    ply_delete(f);
+    ply_delete(g);
+    ply_delete(gcd);
+    ply_delete(a);
+    ply_delete(b);
+    ply_delete(gcd_check);
+    ply_delete(a_check);
+    ply_delete(b_check);
 
     return;
 }
@@ -628,7 +667,8 @@ int main() {
     test_ply_neg();
     //test_sub_division(); passed
     test_ply_division();
-    test_ply_gcd();
+    test_ply_gcd_1();
+    test_ply_gcd_2();
     test_ply_mod_reduce();
     test_ply_mod_inv();
     test_ply_mod_sum();

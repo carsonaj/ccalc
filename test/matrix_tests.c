@@ -461,6 +461,37 @@ void test_mat_row_op3() {
 
 void test_mat_product_1() {
     // DBL ======================================
+    Matrix *m1 = mat_create(INT, 2,2);
+    Matrix *m2 = mat_create(INT, 2,2);
+    Matrix *p = mat_create(INT, 2,2);
+    Matrix *pc = mat_create(INT, 2,2);
+
+    mat_init_int(m1);
+    mat_init_int(m2);
+    mat_init_int(p);
+    mat_init_int(pc);
+
+    int ent1[6] = {0, 1, 1, -2};
+    int ent2[6] = {0, 1, 1, -3};
+    int entc[4] = {1, -3, -2, 7};
+
+    mat_fill_int(m1, ent1);
+    mat_fill_int(m2, ent2);
+    mat_fill_int(pc, entc);
+
+    mat_product(m1, m2, p);
+    assert(mat_equal(p, pc) == TRUE);
+
+    mat_delete(m1);
+    mat_delete(m2);
+    mat_delete(p);
+    mat_delete(pc);
+
+    return;
+}
+
+void test_mat_product_2() {
+    // DBL ======================================
     Matrix *m1 = mat_create(DBL, 2,3);
     Matrix *m2 = mat_create(DBL, 3,2);
     Matrix *p = mat_create(DBL, 2,2);
@@ -490,7 +521,7 @@ void test_mat_product_1() {
     return;
 }
 
-void test_mat_product_2() {
+void test_mat_product_3() {
     Matrix *m = mat_create(PLY, 2, 2);
     mat_init_ply(m, DBL);
 
@@ -778,6 +809,7 @@ void test_mat_solve() {
 // run tests:
 int main() {
 
+
     // data structure:
     //test_mat_print();
     test_mat_create();
@@ -798,6 +830,7 @@ int main() {
     test_mat_row_op3();
     test_mat_product_1();
     test_mat_product_2();
+    test_mat_product_3();
     test_mat_had_product();
     test_mat_scale();
     test_mat_sum();
@@ -806,8 +839,8 @@ int main() {
     // algorithms:
     test_mat_ref();
     test_mat_rref();
-    test_mat_solve();/*
-    */
+    test_mat_solve();
+    
     
     return 0;
 }

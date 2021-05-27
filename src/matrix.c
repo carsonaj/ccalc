@@ -28,6 +28,19 @@ Matrix *mat_create(dtype t, int n, int p) {
     return mat;
 }
 
+void mat_init_int(Matrix *mat) {
+    assert(mat->type == INT);
+    int n = mat->nrow;
+    int p = mat->ncol;
+    int i;
+    for (i=0; i<n*p; i++) {
+        mat->entries[i].type = INT;
+        mat->entries[i].val.dblval = 0;
+    }
+
+    return;
+}
+
 void mat_init_dbl(Matrix *mat) {
     assert(mat->type == DBL);
     int n = mat->nrow;
@@ -64,6 +77,8 @@ void mat_delete(Matrix *mat) {
     int p = mat->ncol;
     int i;
     switch (t) {
+        case INT:
+            break;
         case DBL:
             break;
         case PLY: {
@@ -160,7 +175,20 @@ void mat_fill(Matrix *mat, tvalue *entries) {
     return;
 }
 
-// mat_fill directly with doubles
+// fill by row
+void mat_fill_int(Matrix *mat, int *entries) {
+    assert(mat->type == INT);
+    int len = mat->nrow * mat->ncol;
+    tvalue t_entries[len];
+    t_init_ints(t_entries, len);
+    t_ints(entries, t_entries, len);
+
+    mat_fill(mat, t_entries);
+
+    return;
+}
+
+// mat_fill directly with doubles by row
 // make sure len(entries) == nrow * ncol
 void mat_fill_dbl(Matrix *mat, double *entries) {
     assert(mat->type == DBL);
@@ -304,13 +332,17 @@ void mat_row_op1(Matrix *mat, int i, int j) {
     int rows_arr[1] = {i};
     Matrix *temp_i = mat_create(t, 1, ncol);
     switch(t) {
+        case INT:
+            mat_init_int(temp_i);
+            break;
         case DBL:
-        mat_init_dbl(temp_i);
+            mat_init_dbl(temp_i);
             break;
         case PLY: {
             // poly entries must be initialized
             dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
             mat_init_ply(temp_i, coef_type);
+            break;
         }
     }
     mat_get_rows(mat, temp_i, rows_arr);
@@ -336,12 +368,17 @@ void mat_row_op2(Matrix *mat, int i, tvalue k) {
 
     tvalue entry;
     switch(t) {
+        case INT:
+            t_init_int(&entry);
+            break;
         case DBL:
+            t_init_dbl(&entry);
             break;
         case PLY: {
             // poly entries must be initialized
             dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
             t_init_ply(coef_type, &entry);
+            break;
         }
     }
 
@@ -368,15 +405,20 @@ void mat_row_op3(Matrix *mat, int i, int j, tvalue k) {
     tvalue entry; 
     tvalue temp_entry;
     switch(t) {
+        case INT:
+            t_init_int(&entry);
+            t_init_int(&temp_entry);
+            break;
         case DBL:
-        t_init_dbl(&entry);
-        t_init_dbl(&temp_entry);
+            t_init_dbl(&entry);
+            t_init_dbl(&temp_entry);
             break;
         case PLY: {
             // poly entries must be initialized
             dtype coef_type = mat_get_entry(mat, 0, 0).val.plyval->type;
             t_init_ply(coef_type, &entry);
             t_init_ply(coef_type, &temp_entry);
+            break;
         }
     }
 
@@ -408,14 +450,22 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
     tvalue kron_prod[n];
     tvalue entry;
     switch(t) {
+        case INT: {
+            t_init_int(&entry);
+            int k;
+            for (k=0; k<n; k++) {
+                 t_init_int(&kron_prod[k]);
+            }
+            break;
+        }
         case DBL: {
             t_init_dbl(&entry);
             int k;
             for (k=0; k<n; k++) {
                  t_init_dbl(&kron_prod[k]);
             }
-        }
             break;
+        }
         case PLY: {
             // poly entries must be initialized
             dtype coef_type = mat_get_entry(A, 0, 0).val.plyval->type;
@@ -424,6 +474,7 @@ void mat_product(Matrix *A, Matrix *B, Matrix *prod) {
             for (k=0; k<n; k++) {
                  t_init_ply(coef_type, &kron_prod[k]);
             }
+            break;
         }
     }
 
@@ -507,6 +558,9 @@ void mat_sum(Matrix *A, Matrix *B, Matrix *sum) {
 
     tvalue entry;
     switch(t) {
+        case INT: 
+            t_init_int(&entry);
+            break;
         case DBL: 
             t_init_dbl(&entry);
             break;
@@ -599,10 +653,10 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
     while (row < nrow) {
         tvalue k; 
         switch(t) {
-        case DBL: 
-            t_init_dbl(&k);
-            break;
-        case MOD: {
+            case DBL: 
+                t_init_dbl(&k);
+                break;
+            case MOD: {
         }
     }
         t_neg(mat_get_entry(mat, row, col), &k);
