@@ -479,7 +479,7 @@ void ply_scale(tvalue s, Polynomial *p, Polynomial *sp) {
     }
 }
 
-void ply_neg(Polynomial *p, Polynomial *neg) {
+void ply_negative(Polynomial *p, Polynomial *neg) {
     dtype t = p->type;
     assert(t == neg->type);
 
@@ -496,7 +496,7 @@ void ply_neg(Polynomial *p, Polynomial *neg) {
     }
 
     t_identity(&t_e);
-    t_neg(t_e, &t_neg_e);
+    t_negative(t_e, &t_neg_e);
  
     ply_scale(t_neg_e, p, neg);
 
@@ -521,7 +521,7 @@ static void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial
 
     tvalue f_coef = ply_get_coef(f, f->deg);
     tvalue g_coef_inv;
-    t_inv(ply_get_coef(g, g->deg), &g_coef_inv);
+    t_inverse(ply_get_coef(g, g->deg), &g_coef_inv);
     tvalue coef;
     t_product(f_coef, g_coef_inv, &coef);
     ply_set_coef(q, deg_q, coef);
@@ -529,7 +529,7 @@ static void sub_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial
     Polynomial *prod = ply_create(t, 0);
     Polynomial *neg = ply_create(t, 0);
     ply_product(g, q, prod);
-    ply_neg(prod, neg);
+    ply_negative(prod, neg);
     ply_sum(f, neg, r);
 
     ply_delete(prod);
@@ -628,7 +628,7 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
 
         ply_zero(z);
         ply_monomial(0, e);
-        ply_neg(q1, neg_q1);
+        ply_negative(q1, neg_q1);
 
         ply_copy(z, mat_get_entry(prod, 0, 0).val.plyval);
         ply_copy(e, mat_get_entry(prod, 0, 1).val.plyval);
@@ -642,7 +642,7 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
             ply_copy(r2, r1);
             ply_division(r0, r1, q1, r2);
 
-            ply_neg(q1, neg_q1); // -q1
+            ply_negative(q1, neg_q1); // -q1
             ply_copy(neg_q1, mat_get_entry(next, 1, 1).val.plyval);
             mat_product(prod, next, prod_temp);
 
@@ -661,7 +661,7 @@ void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polyn
 
         }
 
-        t_inv(lead_coef, &lead_coef_inv);
+        t_inverse(lead_coef, &lead_coef_inv);
         ply_scale(lead_coef_inv, r1, gcd);
 
         if (ply_equal(max, f) == TRUE) {
@@ -708,7 +708,7 @@ void ply_mod_reduce(Polynomial *p, Polynomial *m) {
     return;
 }
 
-void ply_mod_inv(Polynomial *p, Polynomial *inv, Polynomial *m) {
+void ply_mod_inverse(Polynomial *p, Polynomial *inv, Polynomial *m) {
     dtype t = p->type;
     assert(t == m->type);
     assert(t == inv->type);

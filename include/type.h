@@ -22,16 +22,22 @@ typedef struct Polynomial Polynomial;
 enum dtype {
     // int
     INT,
+
     // double
     DBL,
+
     // integer modulo p
     MOD,
+
     // polynomial
     PLY,
+
     // matrix
     MAT,
+
     // finite field element
     FFE,
+
     // number field element
     NFE
 };
@@ -96,8 +102,8 @@ int t_equal(tvalue tval1, tvalue tval2);
 int t_is_zero(tvalue tval);
 void t_zero(tvalue *z);
 void t_identity(tvalue *e);
-void t_neg(tvalue x, tvalue *neg);
-void t_inv(tvalue x, tvalue *inv);
+void t_negative(tvalue x, tvalue *neg);
+void t_inverse(tvalue x, tvalue *inv);
 void t_sum(tvalue tval1, tvalue tval2, tvalue *sum);
 void t_product(tvalue tval1, tvalue tval2, tvalue *prod);
 

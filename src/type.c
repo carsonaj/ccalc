@@ -244,7 +244,7 @@ void t_identity(tvalue *e) {
     return;
 }
 
-void t_neg(tvalue x, tvalue *neg) {
+void t_negative(tvalue x, tvalue *neg) {
     dtype t = x.type;
     neg->type = t;
     switch (t) {
@@ -255,14 +255,14 @@ void t_neg(tvalue x, tvalue *neg) {
             neg->val.dblval = -x.val.dblval;
             break;
         case PLY:
-            ply_neg(x.val.plyval, neg->val.plyval);
+            ply_negative(x.val.plyval, neg->val.plyval);
             break;
     }
 
     return;
 }
 
-void t_inv(tvalue x, tvalue *inv) {
+void t_inverse(tvalue x, tvalue *inv) {
     assert(t_is_zero(x) == FALSE);
     dtype t = x.type;
     inv->type = t;

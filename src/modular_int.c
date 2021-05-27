@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "../include/integer.h"
 #include "../include/type.h"
 #include "../include/matrix.h"
 #include "../include/polynomial.h"
@@ -28,33 +29,40 @@ ModularInt *mod_create(int residue, int modulus) {
     return x;
 }
 
-void mod_print(ModularInt m, int newline) {
-    int modulus = m.modulus;
-    int residue = m.residue;
+void mod_delete(ModularInt *x) {
+    assert(x != NULL);
+    free(x);
+
+    return;
+}
+
+void mod_print(ModularInt *m, int newline) {
+    int modulus = m->modulus;
+    int residue = m->residue;
 
     switch(newline) {
         case TRUE: 
-            printf("%dmodulo%d\n", residue, modulus);
+            printf("%dmod%d\n", residue, modulus);
             break;
         case FALSE:
-            printf("%dmodulo%d", residue, modulus);
+            printf("%dmod%d", residue, modulus);
             break;
     }
 
     return;
 }
 
-int mod_equal(ModularInt m, ModularInt n) {
-    if (m.modulus != n.modulus) 
+int mod_equal(ModularInt *m, ModularInt *n) {
+    if (m->modulus != n->modulus) 
         return FALSE;
-    else if (m.residue != n.residue)
+    else if (m->residue != n->residue)
         return FALSE;
 
     return TRUE;
 }
 
-int mod_is_zero(ModularInt m) {
-    int res = (m.residue == 0);
+int mod_is_zero(ModularInt *m) {
+    int res = (m->residue == 0);
 
     return res;
 }
@@ -68,15 +76,15 @@ void mod_zero(ModularInt *z) {
 }
 
 // arguments must be initialized
-void mod_sum(ModularInt m, ModularInt n, ModularInt *sum) {
-    int p = m.modulus;
-    int mr = m.residue;
-    int nr = n.residue;
+void mod_sum(ModularInt *m, ModularInt *n, ModularInt *sum) {
+    int p = m->modulus;
+    int mr = m->residue;
+    int nr = n->residue;
 
     assert(p > 1);
     assert((mr >= 0) && (mr < p));
 
-    assert(n.modulus = p);
+    assert(n->modulus = p);
     assert((nr >= 0) && (nr < p));
 
     assert(sum->modulus = p);
@@ -88,15 +96,15 @@ void mod_sum(ModularInt m, ModularInt n, ModularInt *sum) {
     return;
 }
 
-void mod_product(ModularInt m, ModularInt n, ModularInt *prod) {
-    int p = m.modulus;
-    int mr = m.residue;
-    int nr = n.residue;
+void mod_product(ModularInt *m, ModularInt *n, ModularInt *prod) {
+    int p = m->modulus;
+    int mr = m->residue;
+    int nr = n->residue;
 
     assert(p > 1);
     assert((mr >= 0) && (mr < p));
 
-    assert(n.modulus = p);
+    assert(n->modulus = p);
     assert((nr >= 0) && (nr < p));
 
     assert(prod->modulus = p);
@@ -109,9 +117,9 @@ void mod_product(ModularInt m, ModularInt n, ModularInt *prod) {
     return;
 }
 
-void mod_neg(ModularInt m, ModularInt *neg) {
-    int p = m.modulus;
-    int mr = m.residue;
+void mod_negative(ModularInt *m, ModularInt *neg) {
+    int p = m->modulus;
+    int mr = m->residue;
 
     assert(p > 1);
     assert((mr >= 0) && (mr < p));
@@ -122,15 +130,19 @@ void mod_neg(ModularInt m, ModularInt *neg) {
     return;
 }
 
-void mod_inv(ModularInt m, ModularInt *inv) {
-    int p = m.modulus;
-    int mr = m.residue;
+void mod_inv(ModularInt *m, ModularInt *inv) {
+    int p = m->modulus;
+    int mr = m->residue;
 
     assert(p > 1);
     assert((mr >= 0) && (mr < p));
-
     assert(inv->modulus = p);
-    //inv->residue = ;
+
+    int gcd, a, b;
+    int_gcd(mr, p, &gcd, &a, &b);
+    assert(gcd == 1);
+    
+    inv->residue = int_reduce(a, p);
 
     return;
 }

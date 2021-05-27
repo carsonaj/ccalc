@@ -332,7 +332,7 @@ void test_ply_scale() {
     return;
 }
 
-void test_ply_neg() {
+void test_ply_negative() {
     Polynomial *p1 = ply_create(DBL, 3);
     Polynomial *neg1 = ply_create(DBL, 1);
     Polynomial *check1 = ply_create(DBL, 3);
@@ -340,7 +340,7 @@ void test_ply_neg() {
     double coef_ch1[4] = {1.5, -2, -3, -1};
     ply_fill_dbl(p1, coef_p1);
     ply_fill_dbl(check1, coef_ch1);
-    ply_neg(p1, neg1);
+    ply_negative(p1, neg1);
 
     assert(neg1->deg == 3);
     assert(ply_equal(check1, neg1) == TRUE);
@@ -557,7 +557,7 @@ void test_ply_mod_reduce() {
     return;
 }
 
-void test_ply_mod_inv() {
+void test_ply_mod_inverse() {
     Polynomial *p = ply_create(DBL, 4);
     Polynomial *m = ply_create(DBL, 2);
     Polynomial *inv = ply_create(DBL, 0);
@@ -571,7 +571,7 @@ void test_ply_mod_inv() {
     ply_fill_dbl(m, coef_m);
     ply_fill_dbl(check, coef_check);
 
-    ply_mod_inv(p, inv, m);
+    ply_mod_inverse(p, inv, m);
     assert(ply_equal(inv, check));
 
     ply_delete(p);
@@ -664,13 +664,13 @@ int main() {
     test_ply_sum();
     test_ply_product();
     test_ply_scale();
-    test_ply_neg();
+    test_ply_negative();
     //test_sub_division(); passed
     test_ply_division();
     test_ply_gcd_1();
     test_ply_gcd_2();
     test_ply_mod_reduce();
-    test_ply_mod_inv();
+    test_ply_mod_inverse();
     test_ply_mod_sum();
     test_ply_mod_product();
 

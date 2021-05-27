@@ -25,11 +25,11 @@ void ply_zero(Polynomial *z);
 void ply_sum(Polynomial *poly1, Polynomial *poly2, Polynomial *sum);
 void ply_product(Polynomial *poly1, Polynomial *poly2, Polynomial *prod);
 void ply_scale(tvalue s, Polynomial *p, Polynomial *sp);
-void ply_neg(Polynomial *p, Polynomial *neg);
+void ply_negative(Polynomial *p, Polynomial *neg);
 void ply_division(Polynomial *f, Polynomial *g, Polynomial *q, Polynomial *r); 
 void ply_gcd(Polynomial *f, Polynomial *g, Polynomial *gcd, Polynomial *a, Polynomial *b);
 void ply_mod_reduce(Polynomial *p, Polynomial *m);
-void ply_mod_inv(Polynomial *p, Polynomial *inv, Polynomial *m);
+void ply_mod_inverse(Polynomial *p, Polynomial *inv, Polynomial *m);
 void ply_mod_sum(Polynomial *p, Polynomial *q, Polynomial *sum, Polynomial *m);
 void ply_mod_product(Polynomial *p, Polynomial *q, Polynomial *prod, Polynomial *m);
 /*

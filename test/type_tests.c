@@ -274,7 +274,7 @@ void test_t_identity_2() {
     return;
 }
 
-void test_t_neg_2() {
+void test_t_negative_2() {
     tvalue x;
     t_init_dbl(&x);
     tvalue neg;
@@ -283,7 +283,7 @@ void test_t_neg_2() {
     t_init_dbl(&check);
 
     t_dbl(2.3, &x);
-    t_neg(x, &neg);
+    t_negative(x, &neg);
     t_dbl(-2.3, &check);
     
     assert(t_equal(neg, check) == TRUE);
@@ -295,7 +295,7 @@ void test_t_neg_2() {
     return;
 }
 
-void test_t_neg_3() {
+void test_t_negative_3() {
     tvalue x;
     t_init_ply(DBL, &x);
     double coef_x[3] = {1, 0, -3};
@@ -305,7 +305,7 @@ void test_t_neg_3() {
 
     tvalue neg;
     t_init_ply(DBL, &neg);
-    t_neg(x, &neg);
+    t_negative(x, &neg);
 
     tvalue check;
     t_init_ply(DBL, &check);
@@ -326,7 +326,7 @@ void test_t_neg_3() {
     return;
 }
 
-void test_t_inv() {
+void test_t_inverse() {
     tvalue x; 
     t_init_dbl(&x);
     tvalue inv;
@@ -334,7 +334,7 @@ void test_t_inv() {
     tvalue check;
     t_init_dbl(&check);
     t_dbl(2, &x);
-    t_inv(x, &inv);
+    t_inverse(x, &inv);
     t_dbl(0.5, &check);
     assert(t_equal(inv, check) == TRUE);
 
@@ -527,9 +527,9 @@ int main() {
     test_t_zero_2(); // passed
     test_t_zero_3(); // passed
     test_t_identity_2(); // passed
-    test_t_neg_2(); // passed
-    test_t_neg_3(); // x
-    test_t_inv(); // passed
+    test_t_negative_2(); // passed
+    test_t_negative_3(); // x
+    test_t_inverse(); // passed
     test_t_sum_1();
     test_t_sum_2(); // passed
     test_t_sum_3(); // x

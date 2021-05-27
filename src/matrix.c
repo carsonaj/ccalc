@@ -642,7 +642,7 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
         case MOD: {
         }
     }
-    t_inv(entry, &inv);
+    t_inverse(entry, &inv);
     mat_row_op2(mat, row, inv);
 
     if (start_row != row) {
@@ -659,7 +659,7 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
             case MOD: {
         }
     }
-        t_neg(mat_get_entry(mat, row, col), &k);
+        t_negative(mat_get_entry(mat, row, col), &k);
         if (t_is_zero(k) == FALSE) {
             mat_row_op3(mat, row, start_row, k);
         }
@@ -704,7 +704,7 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
     // now (row, col) is the pivot
     int prev_row = row-1;
     while (0 <= prev_row) {
-        t_neg(mat_get_entry(mat, prev_row, col), &entry);
+        t_negative(mat_get_entry(mat, prev_row, col), &entry);
         if (t_is_zero(entry) == FALSE)
             mat_row_op3(mat, prev_row, row, entry);
         prev_row = prev_row - 1;
