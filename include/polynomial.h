@@ -10,6 +10,7 @@ Polynomial *ply_create(dtype t, int deg);
 void ply_delete(Polynomial *poly);
 void ply_fill(Polynomial *poly, tvalue *coefs);
 void ply_fill_dbl(Polynomial *poly, double *coefs);
+void ply_fill_mod(Polynomial *poly, int *coefs, int modulus);
 tvalue ply_get_coef(Polynomial *poly, int i);
 void ply_set_coef(Polynomial *poly, int i, tvalue val);
 void ply_copy(Polynomial *p, Polynomial *q);

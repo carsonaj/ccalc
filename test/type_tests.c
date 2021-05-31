@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "../include/type.h"
+#include "../include/modular_int.h"
 #include "../include/polynomial.h"
 
 #define TRUE 1
@@ -87,6 +88,34 @@ void test_t_dbls() {
     return;
 }
 
+void test_t_init_mod() {
+    tvalue tval;
+    t_init_mod(&tval);
+    assert(tval.type == MOD);
+    assert(tval.val.modval->modulus == 2);
+    assert(tval.val.modval->residue == 0);
+
+    t_delete(&tval);
+
+    return;
+}
+
+void test_t_mod() {
+    tvalue tval;
+    t_init_mod(&tval);
+    ModularInt *x = mod_create(4, 7);
+    t_mod(x, &tval);
+
+    assert(tval.type == MOD);
+    assert(tval.val.modval->modulus == 7);
+    assert(tval.val.modval->residue == 4);
+
+    mod_delete(x);
+    t_delete(&tval);
+    
+    return;
+}
+
 void test_t_init_ply() {
     tvalue tval;
     t_init_ply(DBL, &tval);
@@ -136,6 +165,26 @@ void test_t_copy_3() {
     t_delete(&tval2);
 
     return;
+}
+
+void test_t_copy_4() {
+    tvalue tval1;
+    tvalue tval2;
+
+    t_init_mod(&tval1);
+    t_init_mod(&tval2);
+
+    ModularInt *x = mod_create(3, 11);
+    t_mod(x, &tval1);
+    
+    t_copy(tval1, &tval2);
+
+    assert(tval2.val.modval->modulus == 11);
+    assert(tval2.val.modval->residue == 3);
+
+    t_delete(&tval1);
+    t_delete(&tval2);
+    mod_delete(x);
 }
 
 void test_t_equal_2() {
@@ -188,6 +237,56 @@ void test_t_equal_3() {
     return;
 }
 
+void test_t_equal_4() {
+    tvalue tval1;
+    tvalue tval2;
+    tvalue tval3;
+    tvalue tval4;
+    t_init_mod(&tval1);
+    t_init_mod(&tval2);
+    t_init_mod(&tval3);
+    t_init_mod(&tval4);
+
+    ModularInt *x2 = mod_create(0, 3);
+    ModularInt *x3 = mod_create(1, 2);
+    ModularInt *x4 = mod_create(0, 2);
+
+    t_mod(x2, &tval2);
+    t_mod(x3, &tval3);
+    t_mod(x4, &tval4);
+
+    assert(t_equal(tval1, tval2) == FALSE);
+    assert(t_equal(tval1, tval3) == FALSE);
+    assert(t_equal(tval1, tval4) == TRUE);
+
+    mod_delete(x2);
+    mod_delete(x3);
+    mod_delete(x4);
+    t_delete(&tval1);
+    t_delete(&tval2);
+    t_delete(&tval3);
+    t_delete(&tval4);
+
+    return;
+
+}
+
+void test_t_is_zero_1() {
+    tvalue tval1;
+    tval1.type = INT;
+    tval1.val.intval = 0;
+
+    tvalue tval2;
+    tval2.type = INT;
+    tval2.val.intval = 2;
+
+    assert(t_is_zero(tval1) == TRUE);
+    assert(t_is_zero(tval2) == FALSE);
+
+    t_delete(&tval1);
+    t_delete(&tval2);
+}
+
 void test_t_is_zero_2() {
     tvalue tval1;
     tval1.type = DBL;
@@ -231,6 +330,24 @@ void test_t_is_zero_3() {
     return;
 }
 
+void test_t_is_zero_4() {
+    tvalue tval1;
+    tvalue tval2;
+    t_init_mod(&tval1);
+    t_init_mod(&tval2);
+    ModularInt *x2 = mod_create(1, 3);
+    t_mod(x2, &tval2);
+
+    assert(t_is_zero(tval1) == TRUE);
+    assert(t_is_zero(tval2) == FALSE);
+
+    mod_delete(x2);
+    t_delete(&tval1);
+    t_delete(&tval2);
+
+    return;
+}
+
 void test_t_zero_2() {
     tvalue z;
     t_init_dbl(&z);
@@ -245,6 +362,17 @@ void test_t_zero_2() {
 void test_t_zero_3() {
     tvalue z;
     t_init_ply(DBL, &z);
+    t_zero(&z);
+    assert(t_is_zero(z) == TRUE);
+
+    t_delete(&z);
+
+    return;
+}
+
+void test_t_zero_4() {
+    tvalue z;
+    t_init_mod(&z);
     t_zero(&z);
     assert(t_is_zero(z) == TRUE);
 
@@ -326,7 +454,34 @@ void test_t_negative_3() {
     return;
 }
 
-void test_t_inverse() {
+void test_t_negative_4() {
+    tvalue x;
+    tvalue neg;
+    tvalue check;
+
+    t_init_mod(&x);
+    t_init_mod(&neg);
+    t_init_mod(&check);
+    
+    ModularInt *xm = mod_create(4, 11);
+    ModularInt *xcheck = mod_create(7, 11);
+    t_mod(xm, &x);
+    t_negative(x, &neg);
+    t_mod(xcheck, &check);
+    
+    assert(t_equal(neg, check) == TRUE);
+
+    mod_delete(xm);
+    mod_delete(xcheck);
+
+    t_delete(&x);
+    t_delete(&neg);
+    t_delete(&check);
+
+    return;
+}
+
+void test_t_inverse_1() {
     tvalue x; 
     t_init_dbl(&x);
     tvalue inv;
@@ -337,6 +492,34 @@ void test_t_inverse() {
     t_inverse(x, &inv);
     t_dbl(0.5, &check);
     assert(t_equal(inv, check) == TRUE);
+
+    return;
+}
+
+void test_t_inverse_2() {
+    tvalue x; 
+    tvalue inv;
+    tvalue check; 
+
+    t_init_mod(&x);
+    t_init_mod(&inv);
+    t_init_mod(&check);
+
+    ModularInt *xm = mod_create(4, 11);
+    ModularInt *xcheck = mod_create(3, 11);
+    
+    t_mod(xm, &x);
+    t_mod(xcheck, &check);
+
+    t_inverse(x, &inv);
+
+    assert(t_equal(inv, check) == TRUE);
+
+    mod_delete(xm);
+    mod_delete(xcheck);
+    t_delete(&x);
+    t_delete(&inv);
+    t_delete(&check);
 
     return;
 }
@@ -425,6 +608,39 @@ void test_t_sum_3() {
     return;
 }
 
+void test_t_sum_4() {
+    tvalue tval1;
+    tvalue tval2;
+    tvalue sum;  
+    tvalue check;
+    t_init_mod(&tval1);
+    t_init_mod(&tval2);
+    t_init_mod(&sum);
+    t_init_mod(&check);
+
+    ModularInt *x1 = mod_create(4, 5);
+    ModularInt *x2 = mod_create(3, 5);
+    ModularInt *xcheck = mod_create(2, 5);
+
+    t_mod(x1, &tval1);
+    t_mod(x2, &tval2);
+    t_sum(tval1, tval2, &sum);
+    t_mod(xcheck, &check);
+    
+    assert(t_equal(sum, check) == TRUE);
+
+    mod_delete(x1);
+    mod_delete(x2);
+    mod_delete(xcheck);
+
+    t_delete(&tval1);
+    t_delete(&tval2);
+    t_delete(&sum);
+    t_delete(&check);
+
+    return;
+}
+
 void test_t_product_1() {
     tvalue tval1;
     tvalue tval2;
@@ -507,35 +723,80 @@ void test_t_product_3() {
     return;
 }
 
+void test_t_product_4() {
+    tvalue tval1;
+    tvalue tval2;
+    tvalue prod;  
+    tvalue check;
+    t_init_mod(&tval1);
+    t_init_mod(&tval2);
+    t_init_mod(&prod);
+    t_init_mod(&check);
+
+    ModularInt *x1 = mod_create(4, 5);
+    ModularInt *x2 = mod_create(2, 5);
+    ModularInt *xcheck = mod_create(3, 5);
+
+    t_mod(x1, &tval1);
+    t_mod(x2, &tval2);
+    t_product(tval1, tval2, &prod);
+    t_mod(xcheck, &check);
+    
+    assert(t_equal(prod, check) == TRUE);
+
+    mod_delete(x1);
+    mod_delete(x2);
+    mod_delete(xcheck);
+
+    t_delete(&tval1);
+    t_delete(&tval2);
+    t_delete(&prod);
+    t_delete(&check);
+
+    return;
+}
+
+
 //===========================================================================================
 //===========================================================================================
 
 // run tests:
 int main() {
+
     //test_t_print(); // passed
-    test_t_init_dbl(); // x
+    test_t_init_dbl(); // passed
     test_t_dbl(); // passed
-    test_t_init_dbls(); // x 
+    test_t_init_dbls(); // passed
     test_t_dbls(); // passed
-    test_t_init_ply();
+    test_t_init_mod(); //passed
+    test_t_mod(); // passed
+    test_t_init_ply(); // passed
     test_t_copy_2(); // passed
     test_t_copy_3(); // passed
     test_t_equal_2(); // passed
-    test_t_equal_3(); // x passed
+    test_t_equal_3(); //  passed
+    test_t_equal_4(); // passed
+    test_t_is_zero_1(); // passed
     test_t_is_zero_2(); // passed
-    test_t_is_zero_3(); // x passed
+    test_t_is_zero_3(); // passed
+    test_t_is_zero_4(); // passed
     test_t_zero_2(); // passed
     test_t_zero_3(); // passed
+    test_t_zero_4(); // passed
     test_t_identity_2(); // passed
     test_t_negative_2(); // passed
-    test_t_negative_3(); // x
-    test_t_inverse(); // passed
-    test_t_sum_1();
+    test_t_negative_3(); // passed
+    test_t_negative_4(); // passed
+    test_t_inverse_1(); // passed
+    test_t_inverse_2(); // passed
+    test_t_sum_1(); // passed
     test_t_sum_2(); // passed
-    test_t_sum_3(); // x
-    test_t_product_1();
+    test_t_sum_3(); // passed
+    test_t_sum_4(); // passed
+    test_t_product_1(); // passed
     test_t_product_2(); // passed
-    test_t_product_3(); // x
+    test_t_product_3(); // passed
+    test_t_product_4(); // passed
     
 
     return 0;

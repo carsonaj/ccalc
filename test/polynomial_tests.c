@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "../include/type.h"
+#include "../include/integer.h"
 #include "../include/array.h"
 #include "../include/polynomial.h"
 
@@ -77,7 +78,7 @@ void test_ply_set_coef() {
     return;
 }
 
-void test_ply_fill() {
+void test_ply_fill_1() {
     Polynomial *p = ply_create(DBL, 2);
     tvalue coefs[3];
     t_init_dbls(coefs, 3);
@@ -101,6 +102,29 @@ void test_ply_fill() {
     return;
 }
 
+void test_ply_fill_2() {
+    Polynomial *p = ply_create(MOD, 4);
+    int coefs[5] = {1, 2, 3, 5, 4};
+    int modulus = 5;
+
+    int d = p->deg;
+    tvalue t_coefs[d+1]; 
+    t_init_mods(t_coefs, d+1);
+    t_mods(coefs, modulus, t_coefs, d+1);
+
+    int i;
+    for(i=0; i<=d; i++) {
+        assert(t_coefs[i].type == MOD);
+        assert(t_coefs[i].val.modval->residue == int_reduce(coefs[i], modulus));
+        assert(t_coefs[i].val.modval->modulus == modulus);
+    }
+
+    ply_fill(p, t_coefs);
+
+    ply_delete(p);
+
+} 
+
 void test_ply_fill_dbl() {
     Polynomial *p = ply_create(DBL, 2);
     double coefs[3] = {0, 1, 2};
@@ -111,6 +135,18 @@ void test_ply_fill_dbl() {
         assert(p->coefs[i].type == DBL);
         assert(p->coefs[i].val.dblval == i);
     }
+
+    ply_delete(p);
+
+    return;
+}
+
+void test_ply_fill_mod() {
+    Polynomial *p = ply_create(MOD, 4);
+    int coefs[5] = {1, 2, 3, 5, 4};
+    ply_fill_mod(p, coefs, 5);
+
+    assert(t_is_zero(ply_get_coef(p, 3)) == TRUE);
 
     ply_delete(p);
 
@@ -655,8 +691,10 @@ int main() {
     test_ply_create();
     test_ply_get_coef();
     test_ply_set_coef();
-    test_ply_fill(); // passed
+    test_ply_fill_1(); // passed
+    test_ply_fill_2(); // passed
     test_ply_fill_dbl(); // passed
+    test_ply_fill_mod(); // passed
     test_ply_copy();
     test_ply_equal(); 
     test_ply_is_zero();

@@ -36,6 +36,13 @@ void mod_delete(ModularInt *x) {
     return;
 }
 
+void mod_copy(ModularInt *x, ModularInt *y) {
+    y->modulus = x->modulus;
+    y->residue = x->residue;
+
+    return;
+}
+
 void mod_print(ModularInt *m, int newline) {
     int modulus = m->modulus;
     int residue = m->residue;
@@ -52,6 +59,9 @@ void mod_print(ModularInt *m, int newline) {
     return;
 }
 
+
+// algebra
+
 int mod_equal(ModularInt *m, ModularInt *n) {
     if (m->modulus != n->modulus) 
         return FALSE;
@@ -62,6 +72,7 @@ int mod_equal(ModularInt *m, ModularInt *n) {
 }
 
 int mod_is_zero(ModularInt *m) {
+    assert(m->modulus > 1);
     int res = (m->residue == 0);
 
     return res;
@@ -72,7 +83,13 @@ void mod_zero(ModularInt *z) {
     z->residue = 0;
 
     return;
+}
 
+void mod_identity(ModularInt *e) {
+    assert(e->modulus > 1);
+    e->residue = 1;
+
+    return;
 }
 
 // arguments must be initialized
@@ -130,7 +147,7 @@ void mod_negative(ModularInt *m, ModularInt *neg) {
     return;
 }
 
-void mod_inv(ModularInt *m, ModularInt *inv) {
+void mod_inverse(ModularInt *m, ModularInt *inv) {
     int p = m->modulus;
     int mr = m->residue;
 

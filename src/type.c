@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../include/type.h"
+#include "../include/integer.h"
+#include "../include/modular_int.h"
 #include "../include/matrix.h"
 #include "../include/polynomial.h"
 
@@ -18,6 +20,9 @@ void t_print(tvalue tval, int newline) {
             break;
         case DBL:
             printf("%6.2f", tval.val.dblval);
+            break;
+        case MOD:
+            mod_print(tval.val.modval, FALSE);
             break;
         case PLY:
             ply_print(tval.val.plyval, FALSE);
@@ -103,6 +108,48 @@ void t_dbls(double *vals, tvalue *tvals, int len) {
     return;
 }
 
+void t_init_mod(tvalue *tval) {
+    tval->type = MOD;
+    ModularInt *x = mod_create(0, 2);
+    tval->val.modval = x;
+
+    return;
+}
+
+// make sure tval has initialized val.modval
+void t_mod(ModularInt *val, tvalue *tval) {
+    assert(tval->type = MOD);
+    mod_copy(val, tval->val.modval);
+
+    return;
+}
+
+void t_init_mods(tvalue *tvals, int len) {
+    int i;
+    for (i=0; i<len; i++) {
+        t_init_mod(&tvals[i]);
+    }
+
+    return;
+}
+
+// copy ModularInts into tvalues
+// tvalues must be initialized
+void t_mods(int *vals, int modulus, tvalue *tvals, int len) {
+    assert(modulus > 1);
+    int i;
+    for (i=0; i<len; i++) {
+        assert(tvals[i].type == MOD);
+    }
+
+    for (i=0; i<len; i++) {
+        tvals[i].val.modval->modulus = modulus;
+        tvals[i].val.modval->residue = int_reduce(vals[i], modulus);
+    }
+
+    return;
+}
+
 void t_init_ply(dtype coeff_type, tvalue *tval) {
     tval->type = PLY;
     Polynomial *p = ply_create(coeff_type, 0);
@@ -127,8 +174,12 @@ void t_delete(tvalue *tval) {
             break;
         case DBL:
             break;
+        case MOD:
+            mod_delete(tval->val.modval);
+            break;
         case PLY:
             ply_delete(tval->val.plyval);
+            break;
     }
 
     return;
@@ -146,6 +197,9 @@ void t_copy(tvalue tval1, tvalue *tval2) {
             break;
         case DBL:
             tval2->val.dblval = tval1.val.dblval;
+            break;
+        case MOD: 
+            mod_copy(tval1.val.modval, tval2->val.modval);
             break;
         case PLY: 
             ply_copy(tval1.val.plyval, tval2->val.plyval);
@@ -175,6 +229,10 @@ int t_equal(tvalue tval1, tvalue tval2) {
             else 
                 return FALSE;
         }
+        case MOD: {
+            int res = mod_equal(tval1.val.modval, tval2.val.modval);
+            return res;
+        }
         case PLY: {
             int res = ply_equal(tval1.val.plyval, tval2.val.plyval);
             return res;
@@ -202,6 +260,10 @@ int t_is_zero(tvalue tval) {
                 return FALSE;
             break;
         }
+        case MOD: {
+            int res = mod_is_zero(tval.val.modval);
+            return res;
+        }
         case PLY: {
             int res = ply_is_zero(tval.val.plyval);
             return res;
@@ -218,6 +280,9 @@ void t_zero(tvalue *z) {
             break;
         case DBL: 
             z->val.dblval = 0.0;
+            break;
+        case MOD:
+            mod_zero(z->val.modval);
             break;
         case PLY:
             ply_zero(z->val.plyval);
@@ -237,6 +302,9 @@ void t_identity(tvalue *e) {
         case DBL: 
             e->val.dblval = 1.0;
             break;
+        case MOD: 
+            mod_identity(e->val.modval);
+            break;
         case PLY:
             break;
     }
@@ -253,6 +321,9 @@ void t_negative(tvalue x, tvalue *neg) {
             break;
         case DBL: 
             neg->val.dblval = -x.val.dblval;
+            break;
+        case MOD:
+            mod_negative(x.val.modval, neg->val.modval);
             break;
         case PLY:
             ply_negative(x.val.plyval, neg->val.plyval);
@@ -272,6 +343,8 @@ void t_inverse(tvalue x, tvalue *inv) {
             break;
         case PLY:
             break;
+        case MOD:
+            mod_inverse(x.val.modval, inv->val.modval);
     }
 
     return;
@@ -290,6 +363,9 @@ void t_sum(tvalue tval1, tvalue tval2, tvalue *sum) {
         case DBL:
             sum->val.dblval = tval1.val.dblval + tval2.val.dblval;
             break;
+        case MOD:
+            mod_sum(tval1.val.modval, tval2.val.modval, sum->val.modval);
+            break; 
         case PLY:
             ply_sum(tval1.val.plyval, tval2.val.plyval, sum->val.plyval);
             break; 
@@ -312,6 +388,9 @@ void t_product(tvalue tval1, tvalue tval2, tvalue *prod) {
         case DBL:
             prod->val.dblval = tval1.val.dblval * tval2.val.dblval;
             break;
+        case MOD:
+            mod_product(tval1.val.modval, tval2.val.modval, prod->val.modval);
+            break; 
         case PLY:
             ply_product(tval1.val.plyval, tval2.val.plyval, prod->val.plyval);
             break; 

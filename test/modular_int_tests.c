@@ -15,7 +15,6 @@ void test_mod_print() {
     printf("\n\n");
     mod_delete(x);
 
-
     return;
 }
 
@@ -28,6 +27,21 @@ void test_mod_create() {
     ModularInt *y = mod_create(8, 5);
     assert(y->modulus == 5);
     assert(y->residue == 3);
+    mod_delete(y);
+
+    return;
+}
+
+void test_mod_copy() {
+    ModularInt *x = mod_create(2, 3);
+    ModularInt *y = mod_create(3, 4);
+
+    mod_copy(x, y);
+
+    assert(y->modulus == 3);
+    assert(y->residue == 2);
+
+    mod_delete(x);
     mod_delete(y);
 
     return;
@@ -129,12 +143,12 @@ void test_mod_negative() {
     return;
 }
 
-void test_mod_inv() {
+void test_mod_inverse() {
     ModularInt *x1 = mod_create(4, 5);
     ModularInt *inv = mod_create(20, 5);
     ModularInt *check = mod_create(4, 5);
 
-    mod_inv(x1, inv);
+    mod_inverse(x1, inv);
 
     assert(mod_equal(inv, check));
 
@@ -154,13 +168,14 @@ void test_mod_inv() {
 int main() {
     //test_mod_print();
     test_mod_create();
+    test_mod_copy();
     test_mod_equal();
     test_mod_is_zero();
     test_mod_zero();
     test_mod_sum();
     test_mod_product();
     test_mod_negative();
-    test_mod_inv();
+    test_mod_inverse();
 
     return 0;
 }

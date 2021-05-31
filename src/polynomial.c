@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "../include/type.h"
+#include "../include/integer.h"
 #include "../include/array.h"
+#include "../include/modular_int.h"
 #include "../include/polynomial.h"
 
 #define TRUE 1
@@ -58,11 +61,11 @@ Polynomial *ply_create(dtype t, int deg) {
 void ply_delete(Polynomial *poly) {
     assert(poly != NULL);
     dtype t = poly->type;
-    switch (t) {
-        case DBL:
-            break;
-        case FFE: // must free each value as well
-            break;
+    int d = poly->deg;
+    int i;
+    for (i=0; i<=d; i++) {
+        tvalue coefi = ply_get_coef(poly, i);
+        t_delete(&coefi);
     }
 
     free(poly->coefs);
@@ -81,10 +84,21 @@ void ply_fill(Polynomial *poly, tvalue *coefs) {
         assert(t_is_zero(coefs[deg]) == FALSE);
     
     int i;
-    for (i = 0; i <= deg; i++) {
+    for (i=0; i<=deg; i++) {
         dtype s = coefs[i].type;
         assert(t == s);
-        t_copy(coefs[i], &poly->coefs[i]);
+        poly->coefs[i] = coefs[i];
+        //switch (t) {
+        //    case INT:
+        //        t_copy(coefs[i], &poly->coefs[i]);
+        //        break;
+        //    case DBL: 
+        //        t_copy(coefs[i], &poly->coefs[i]);
+        //        break;
+        //    case MOD:
+        //        poly->coefs[i] = coefs[i];
+        //        break;
+        //}
     }
 
     return;
@@ -94,7 +108,7 @@ void ply_fill(Polynomial *poly, tvalue *coefs) {
 void ply_fill_dbl(Polynomial *poly, double *coefs) {
     assert(poly->type == DBL);
     int deg = poly->deg;
-    tvalue t_coefs[deg + 1];
+    tvalue t_coefs[deg+1];
     t_init_dbls(t_coefs, deg+1);
     t_dbls(coefs, t_coefs, deg+1);
 
@@ -108,6 +122,24 @@ void ply_fill_dbl(Polynomial *poly, double *coefs) {
     for (i=0; i<=deg; i++) {
         t_delete(&t_coefs[i]);
     }
+
+    return;
+}
+
+void ply_fill_mod(Polynomial *poly, int *coefs, int modulus) {
+    int d = poly->deg;
+    tvalue t_coefs[d+1]; 
+    t_init_mods(t_coefs, d+1);
+    t_mods(coefs, modulus, t_coefs, d+1);
+
+    //int i;
+    //for(i=0; i<=d; i++) {
+    //    assert(t_coefs[i].type == MOD);
+    //    assert(t_coefs[i].val.modval->residue == int_reduce(coefs[i], modulus));
+    //    assert(t_coefs[i].val.modval->modulus == modulus);
+    //}
+    
+    ply_fill(poly, t_coefs);
 
     return;
 }
